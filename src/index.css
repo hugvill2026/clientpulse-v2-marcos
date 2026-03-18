@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --brand-teal: #0D9488;
+    --brand-dark: #0F172A;
+    --brand-amber: #F59E0B;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-slate-50 text-slate-900 font-interface antialiased overflow-x-hidden;
+  }
+
+  h1, h2, h3, h4, .font-display {
+    @apply font-display tracking-tight text-slate-900;
+  }
+}
+
+@layer components {
+  /* Dynamic Glass Effects */
+  .glass {
+    @apply bg-white/70 backdrop-blur-md border border-white/20;
+  }
+  
+  .glass-dark {
+    @apply bg-slate-900/80 backdrop-blur-md border border-slate-700/30;
+  }
+
+  /* Micro-animations */
+  .hover-scale {
+    @apply transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98];
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-300 rounded-full transition-colors hover:bg-slate-400;
+  }
+
+  /* Card and Layouts */
+  .card-premium {
+    @apply glass rounded-3xl p-6 shadow-sm shadow-slate-200/50 hover-scale;
+  }
+
+  .btn-primary {
+    @apply bg-brand-teal text-white px-6 py-2.5 rounded-2xl font-semibold shadow-lg shadow-teal-500/20 hover:bg-teal-700 transition-all hover-scale disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .btn-secondary {
+    @apply bg-white text-slate-700 border border-slate-200 px-6 py-2.5 rounded-2xl font-semibold hover:bg-slate-50 transition-all hover-scale disabled:opacity-50;
+  }
+
+  .input-premium {
+    @apply w-full bg-white border border-slate-200 rounded-2xl px-4 py-3 outline-none focus:ring-2 focus:ring-brand-teal/20 focus:border-brand-teal transition-all placeholder:text-slate-400;
+  }
+}
+
+/* Page Transitions */
+.page-enter {
+  animation: fadeIn 0.4s ease-out forwards, slideUp 0.4s ease-out forwards;
+}
+
+/* Skeleton Loading */
+.skeleton {
+  @apply relative overflow-hidden bg-slate-200 rounded-lg;
+}
+
+.skeleton::after {
+  @apply absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent;
+  animation: shimmer 1.5s infinite;
+  content: '';
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
