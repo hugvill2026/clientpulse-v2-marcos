@@ -20,6 +20,8 @@ import {
 } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '../../utils/cn'
+import { ReminderScheduler } from './ReminderScheduler'
+import { QuickActionModal } from './QuickActionModal'
 
 // Navigation Items
 const navItems = [
@@ -47,9 +49,9 @@ const Sidebar = ({ isOpen, setOpen }: { isOpen: boolean, setOpen: (o: boolean) =
       className="hidden md:flex flex-col h-screen bg-slate-900 border-r border-slate-800 fixed left-0 top-0 z-50 text-slate-400 overflow-hidden group shadow-2xl"
     >
       {/* Branding */}
-      <div className="h-20 flex items-center px-6 gap-3">
-        <div className="w-10 h-10 rounded-2xl bg-teal-500/20 flex items-center justify-center border border-teal-500/30">
-          <div className="w-4 h-4 rounded-full bg-teal-500 shadow-[0_0_15px_rgba(20,184,166,0.6)] animate-pulse" />
+      <div className="h-20 flex items-center px-6 gap-3 w-full">
+        <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center relative">
+          <img src="/logo_clientpulse_v2.svg" alt="ClientPulse Logo" className="w-9 h-9 drop-shadow-lg" />
         </div>
         {isOpen && (
           <motion.span 
@@ -179,7 +181,7 @@ const MobileNav = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }
         >
           <div className="h-20 flex items-center justify-between mb-4">
              <div className="flex items-center gap-3">
-               <div className="w-8 h-8 rounded-xl bg-teal-500 flex items-center justify-center shadow-lg shadow-teal-500/30 font-display text-white font-bold text-lg leading-none">C</div>
+               <img src="/logo_clientpulse_v2.svg" alt="ClientPulse Logo" className="w-8 h-8 drop-shadow-md" />
                <span className="font-display font-bold text-slate-800">clientpulse</span>
              </div>
              <button onClick={onClose} className="p-2 bg-slate-100 rounded-xl"><X className="w-5 h-5 text-slate-500" /></button>
@@ -202,9 +204,11 @@ const MobileNav = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }
 export const AppLayout = ({ children, title }: { children: React.ReactNode, title?: string }) => {
   const [isSidebarOpen, setSidebarOpen] = useState(true)
   const [isMobileNavOpen, setMobileNavOpen] = useState(false)
+  const [isQuickActionOpen, setQuickActionOpen] = useState(false)
 
   return (
     <div className="flex min-h-screen bg-slate-50">
+      <ReminderScheduler />
       {/* Sidebar Desktop */}
       <Sidebar isOpen={isSidebarOpen} setOpen={setSidebarOpen} />
       
@@ -243,14 +247,19 @@ export const AppLayout = ({ children, title }: { children: React.ReactNode, titl
         </main>
 
         {/* Floating Action Button (FAB) as per spec */}
-        <div className="fixed bottom-8 right-8 z-30">
-          <button className="w-14 h-14 bg-teal-500 rounded-full text-white shadow-2xl flex items-center justify-center hover:scale-110 active:scale-90 transition-all group ring-8 ring-teal-500/10">
+        <div className="fixed bottom-8 right-8 z-[90]">
+          <button onClick={() => setQuickActionOpen(true)} className="w-14 h-14 bg-teal-500 rounded-full text-white shadow-2xl flex items-center justify-center hover:scale-110 active:scale-90 transition-all group ring-8 ring-teal-500/10">
             <PlusCircle className="w-7 h-7" />
             <div className="absolute right-16 bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-xl">
               Acción Rápida
             </div>
           </button>
         </div>
+        
+        <QuickActionModal 
+          isOpen={isQuickActionOpen} 
+          onClose={() => setQuickActionOpen(false)} 
+        />
       </div>
     </div>
   )

@@ -27,9 +27,10 @@ const PageLoader = () => (
   </div>
 )
 
+import { useAuthStore } from './store/authStore'
+
 function App() {
-  // TODO: Add actual auth state from zustand store
-  const isAuthenticated = false // Temporary
+  const { isAuthenticated } = useAuthStore()
 
   return (
     <Suspense fallback={<PageLoader />}>

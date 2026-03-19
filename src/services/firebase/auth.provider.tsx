@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { 
   onAuthStateChanged, 
   signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword,
   signOut, 
   User, 
   GoogleAuthProvider, 
@@ -37,12 +38,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const loginWithEmail = async (email: string, pass: string) => {
+    return await signInWithEmailAndPassword(auth, email, pass);
+  };
+
+  const registerWithEmail = async (email: string, pass: string) => {
+    return await createUserWithEmailAndPassword(auth, email, pass);
+  };
+
   const logout = () => signOut(auth);
 
   const value = {
     user,
     loading,
     loginWithGoogle,
+    loginWithEmail,
+    registerWithEmail,
     logout,
   };
 

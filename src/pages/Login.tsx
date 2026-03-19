@@ -6,6 +6,8 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { cn } from '../utils/cn'
+import { useAuth } from '../services/firebase/auth.provider'
+import toast from 'react-hot-toast'
 
 // Validation Schema
 const loginSchema = z.object({
@@ -19,6 +21,7 @@ type LoginForm = z.infer<typeof loginSchema>
 const Login = () => {
   const [showPassword, setShowPassword] = React.useState(false)
   const navigate = useNavigate()
+  const { loginWithEmail, loginWithGoogle } = useAuth()
 
   const {
     register,
@@ -29,10 +32,25 @@ const Login = () => {
   })
 
   const onSubmit = async (data: LoginForm) => {
-    console.log('Login data:', data)
-    // TODO: Firebase Auth implementation
-    // For now, redirect to dashboard
-    navigate('/dashboard')
+    try {
+      await loginWithEmail(data.email, data.password)
+      toast.success('Bienvenido de nuevo 🎉')
+      navigate('/dashboard')
+    } catch (error: any) {
+      console.error(error)
+      toast.error('Credenciales incorrectas o error de red.')
+    }
+  }
+
+  const handleGoogleLogin = async () => {
+    try {
+      await loginWithGoogle()
+      toast.success('Bienvenido de nuevo 🎉')
+      navigate('/dashboard')
+    } catch (error: any) {
+      console.error(error)
+      toast.error('Error al iniciar sesión con Google.')
+    }
   }
 
   return (
@@ -53,12 +71,15 @@ const Login = () => {
              style={{ backgroundImage: 'radial-gradient(circle, #334155 1px, transparent 1px)', backgroundSize: '24px 24px' }} />
 
         <div className="relative z-10 flex-1 flex flex-col justify-between p-16">
-          <div className="flex items-center gap-3">
-             <div className="w-10 h-10 rounded-2xl bg-teal-500 flex items-center justify-center shadow-lg shadow-teal-500/30">
-               <div className="w-4 h-4 rounded-full bg-white animate-pulse" />
-             </div>
+          <motion.div 
+            initial={{ scale: 0.5, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 200, damping: 15 }}
+            className="flex items-center gap-3"
+          >
+             <img src="/logo_clientpulse_v2.svg" alt="ClientPulse V2 Logo" className="w-12 h-12" />
              <span className="font-display font-semibold text-2xl text-white tracking-tight">clientpulse</span>
-          </div>
+          </motion.div>
 
           <div className="max-w-md">
             <motion.h1 
@@ -106,10 +127,15 @@ const Login = () => {
         <div className="w-full max-w-[420px] space-y-8">
           {/* Header Mobile */}
           <div className="lg:hidden flex flex-col items-center mb-8 gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-teal-500 flex items-center justify-center shadow-lg shadow-teal-500/20">
-               <div className="w-5 h-5 rounded-full bg-white animate-pulse" />
-            </div>
-            <h2 className="text-2xl font-bold text-slate-900 font-display">clientpulse</h2>
+            <motion.img 
+              initial={{ scale: 0.5, rotate: -10, opacity: 0 }}
+              animate={{ scale: 1, rotate: 0, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 200, damping: 15 }}
+              src="/logo_clientpulse_v2.svg" 
+              alt="ClientPulse Logo" 
+              className="w-16 h-16 drop-shadow-xl" 
+            />
+            <h2 className="text-2xl font-bold text-slate-900 font-display hidden">clientpulse</h2>
           </div>
 
           <div className="text-left space-y-2">
@@ -119,7 +145,10 @@ const Login = () => {
 
           {/* Social Login */}
           <div className="grid grid-cols-1 gap-4">
-            <button className="flex items-center justify-center gap-3 w-full bg-white border border-slate-200 text-slate-700 h-14 rounded-2xl font-semibold hover:bg-slate-50 hover:border-slate-300 transition-all hover-scale shadow-sm shadow-slate-200/40 group active:scale-[0.98]">
+            <button 
+              onClick={handleGoogleLogin} 
+              className="flex items-center justify-center gap-3 w-full bg-white border border-slate-200 text-slate-700 h-14 rounded-2xl font-semibold hover:bg-slate-50 hover:border-slate-300 transition-all hover-scale shadow-sm shadow-slate-200/40 group active:scale-[0.98]"
+            >
               <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5 group-hover:scale-110 transition-transform" alt="Google" />
               <span>Continuar con Google</span>
             </button>
@@ -152,7 +181,7 @@ const Login = () => {
             <div className="space-y-1">
               <div className="flex items-center justify-between ml-1 pr-1">
                 <label className="text-sm font-bold text-slate-700">Contraseña</label>
-                <Link to="/forgot-password" size="sm" className="text-teal-600 font-bold text-xs hover:text-teal-700 transition-colors">¿Olvidaste tu contraseña?</Link>
+                <Link to="/forgot-password" className="text-teal-600 font-bold text-xs hover:text-teal-700 transition-colors">¿Olvidaste tu contraseña?</Link>
               </div>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />

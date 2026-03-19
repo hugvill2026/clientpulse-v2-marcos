@@ -57,9 +57,15 @@ const Register = () => {
       >
         <div className="card-premium p-10 border-none shadow-2xl bg-white/90">
           <div className="flex flex-col items-center mb-10 gap-4">
-             <div className="w-14 h-14 rounded-2xl bg-teal-500 flex items-center justify-center shadow-lg shadow-teal-500/30 group">
-                <div className="w-6 h-6 rounded-full bg-white animate-pulse" />
-             </div>
+            <motion.div 
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 200, damping: 15 }}
+              className="flex items-center gap-3"
+            >
+               <img src="/logo_clientpulse_v2.svg" alt="ClientPulse V2 Logo" className="w-12 h-12" />
+               <span className="font-display font-semibold text-2xl text-slate-900 tracking-tight">clientpulse</span>
+            </motion.div>
              <div className="text-center space-y-2">
                 <h1 className="text-3xl font-bold font-display text-slate-900 tracking-tight">Crea tu cuenta gratis</h1>
                 <p className="text-slate-500 font-interface text-sm">Empieza a gestionar tus clientes de forma inteligente hoy mismo.</p>
