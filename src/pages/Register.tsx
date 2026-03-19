@@ -38,7 +38,24 @@ const Register = () => {
 
   const password = watch('password', '')
 
-  const { registerWithEmail } = useAuth()
+  const { registerWithEmail, loginWithGoogle } = useAuth()
+
+  const handleGoogleRegister = async () => {
+    try {
+      await loginWithGoogle()
+      toast.success('¡Registro exitoso con Google! 🎉')
+      navigate('/onboarding')
+    } catch (error: any) {
+      console.error("Detalle del error de Google:", error)
+      if (error.code === 'auth/unauthorized-domain') {
+        toast.error('Dominio no autorizado. Dile a Marcos que añada esta web en Firebase.', { duration: 6000 })
+      } else if (error.code === 'auth/popup-blocked') {
+        toast.error('Tu navegador bloqueó la ventana de Google. Usa tu email manual.')
+      } else {
+        toast.error(`Error: ${error.message || 'No se pudo conectar con Google.'}`)
+      }
+    }
+  }
 
   const onSubmit = async (data: RegisterForm) => {
     try {
@@ -85,16 +102,31 @@ const Register = () => {
              </div>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700 ml-1 uppercase tracking-widest leading-none">Nombre Completo *</label>
-                  <div className="relative">
-                     <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                     <input type="text" {...register('fullName')} placeholder="Víctor Villegas" className="input-premium h-12 pl-11 text-sm shadow-sm" />
-                  </div>
-                  {errors.fullName && <p className="text-[10px] text-red-500 font-bold ml-1">{errors.fullName.message}</p>}
-               </div>
+          <div className="space-y-6">
+            <button 
+              onClick={handleGoogleRegister} 
+              type="button"
+              className="flex items-center justify-center gap-3 w-full bg-white border border-slate-200 text-slate-700 h-14 rounded-2xl font-semibold hover:bg-slate-50 hover:border-slate-300 transition-all hover-scale shadow-sm shadow-slate-200/40 group active:scale-[0.98]"
+            >
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5 group-hover:scale-110 transition-transform" alt="Google" />
+              <span>Registrarse con Google</span>
+            </button>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-200"></div></div>
+              <div className="relative flex justify-center text-xs uppercase"><span className="bg-slate-50 px-4 text-slate-400 font-bold tracking-widest">o regístrate con tu email</span></div>
+            </div>
+
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-700 ml-1 uppercase tracking-widest leading-none">Nombre Completo *</label>
+                    <div className="relative">
+                       <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                       <input type="text" {...register('fullName')} placeholder="Ej. Ana Pérez" className="input-premium h-12 pl-11 text-sm shadow-sm" />
+                    </div>
+                    {errors.fullName && <p className="text-[10px] text-red-500 font-bold ml-1">{errors.fullName.message}</p>}
+                 </div>
                <div className="space-y-1">
                   <label className="text-xs font-bold text-slate-700 ml-1 uppercase tracking-widest leading-none">Negocio (Opcional)</label>
                   <div className="relative">
@@ -182,7 +214,8 @@ const Register = () => {
                   </>
                )}
             </button>
-          </form>
+            </form>
+          </div>
 
           <p className="text-center text-slate-500 font-bold text-sm mt-8">
             ¿Ya tienes una cuenta?{' '}
