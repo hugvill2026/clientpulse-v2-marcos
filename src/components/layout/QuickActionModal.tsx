@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, UserPlus, Clock } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
-import { ClientService, ReminderService, ClientData } from '../../services/firebase/firestore';
+import { ClientService, ReminderService, type ClientData } from '../../services/firebase/firestore';
 import toast from 'react-hot-toast';
 
 export const QuickActionModal = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
