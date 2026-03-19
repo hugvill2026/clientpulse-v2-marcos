@@ -15,7 +15,10 @@
   }
 
   body {
-    @apply bg-slate-50 text-slate-900 font-interface antialiased overflow-x-hidden;
+    @app    @apply bg-slate-50 text-slate-900 antialiased;
+  }
+}
+ly bg-slate-50 text-slate-900 font-interface antialiased overflow-x-hidden;
   }
 
   h1, h2, h3, h4, .font-display {
