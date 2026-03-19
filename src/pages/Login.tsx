@@ -48,8 +48,14 @@ const Login = () => {
       toast.success('Bienvenido de nuevo 🎉')
       navigate('/dashboard')
     } catch (error: any) {
-      console.error(error)
-      toast.error('Error al iniciar sesión con Google.')
+      console.error("Detalle del error de Google:", error)
+      if (error.code === 'auth/unauthorized-domain') {
+        toast.error('Dominio no autorizado. Añade clientpulse-v2-marcos.vercel.app en Firebase Console.', { duration: 6000 })
+      } else if (error.code === 'auth/popup-blocked') {
+        toast.error('Tu navegador bloqueó la ventana emergente de Google. Intenta usando tu email.')
+      } else {
+        toast.error(`Error: ${error.message || 'No se pudo conectar con Google.'}`)
+      }
     }
   }
 
