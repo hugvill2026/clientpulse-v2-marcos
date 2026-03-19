@@ -72,13 +72,11 @@ const Login = () => {
 
         <div className="relative z-10 flex-1 flex flex-col justify-between p-16">
           <motion.div 
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 200, damping: 15 }}
-            className="flex items-center gap-3"
+            initial={{ x: -30, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ type: "spring", stiffness: 180, damping: 20 }}
           >
-             <img src="/logo_clientpulse_v2.svg" alt="ClientPulse V2 Logo" className="w-12 h-12" />
-             <span className="font-display font-semibold text-2xl text-white tracking-tight">clientpulse</span>
+             <img src="/logo_clientpulse_v2.svg" alt="ClientPulse V2 Logo" className="h-12 w-auto" />
           </motion.div>
 
           <div className="max-w-md">
@@ -126,16 +124,15 @@ const Login = () => {
       >
         <div className="w-full max-w-[420px] space-y-8">
           {/* Header Mobile */}
-          <div className="lg:hidden flex flex-col items-center mb-8 gap-4">
+          <div className="lg:hidden flex flex-col items-center mb-8">
             <motion.img 
-              initial={{ scale: 0.5, rotate: -10, opacity: 0 }}
-              animate={{ scale: 1, rotate: 0, opacity: 1 }}
-              transition={{ type: "spring", stiffness: 200, damping: 15 }}
+              initial={{ y: -15, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 200, damping: 18 }}
               src="/logo_clientpulse_v2.svg" 
               alt="ClientPulse Logo" 
-              className="w-16 h-16 drop-shadow-xl" 
+              className="h-10 w-auto" 
             />
-            <h2 className="text-2xl font-bold text-slate-900 font-display hidden">clientpulse</h2>
           </div>
 
           <div className="text-left space-y-2">

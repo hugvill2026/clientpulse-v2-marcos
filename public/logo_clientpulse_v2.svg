@@ -1,31 +1,101 @@
-<svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Gradient Definitions -->
+<svg width="420" height="120" viewBox="0 0 420 120" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="brand-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#0D9488" /> <!-- teal-600 -->
-      <stop offset="100%" style="stop-color:#0EA5E9" /> <!-- sky-500 -->
+    <!-- Multi-color gradient: orange → pink → purple → blue → teal -->
+    <linearGradient id="grad-vibrant" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#F97316"/>
+      <stop offset="30%"  stop-color="#EC4899"/>
+      <stop offset="60%"  stop-color="#8B5CF6"/>
+      <stop offset="80%"  stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
     </linearGradient>
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="6" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+
+    <!-- Glow filter for the icon mark -->
+    <filter id="glow-icon" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="3.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
     </filter>
+
+    <!-- Pulse line gradient: blue → cyan -->
+    <linearGradient id="grad-pulse" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#8B5CF6"/>
+      <stop offset="50%"  stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+
+    <!-- Text gradient for "pulse" word -->
+    <linearGradient id="grad-text-pulse" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#06B6D4"/>
+      <stop offset="100%" stop-color="#0D9488"/>
+    </linearGradient>
   </defs>
 
-  <!-- Hexagonal Shield Base (Modern & Secure) -->
-  <rect x="35" y="35" width="130" height="130" rx="40" fill="#0F172A" /> <!-- slate-900 -->
-  
-  <!-- Subtle Grid Pattern in background -->
-  <circle cx="100" cy="100" r="45" stroke="rgba(255,255,255,0.05)" stroke-width="2" stroke-dasharray="2 4" />
+  <!-- ══════════════════════════════════════
+       ICON MARK (left side)
+       Person head + shoulders + ECG pulse
+  ════════════════════════════════════════ -->
 
-  <!-- The "Pulse" Element -->
-  <path d="M60 110L85 110L95 80L105 130L115 90L125 110L140 110" 
-        stroke="url(#brand-gradient)" 
-        stroke-width="8" 
-        stroke-linecap="round" 
-        stroke-linejoin="round"
-        filter="url(#glow)" />
-        
-  <!-- Client Dot (The Focus) -->
-  <circle cx="140" cy="110" r="12" fill="url(#brand-gradient)" />
-  <circle cx="140" cy="110" r="6" fill="white" />
+  <!-- Outer decorative arc ring (orbital) -->
+  <path d="M18 60 A42 42 0 0 1 88 50" 
+        stroke="url(#grad-vibrant)" stroke-width="2" 
+        stroke-linecap="round" opacity="0.5" fill="none"
+        filter="url(#glow-icon)"/>
+
+  <!-- Person HEAD circle -->
+  <circle cx="53" cy="32" r="14" fill="url(#grad-vibrant)" filter="url(#glow-icon)"/>
+
+  <!-- Person BODY / shoulders arc that flows into the pulse line -->
+  <path d="M28 80 C28 60 38 53 53 51 C60 50 65 48 70 44" 
+        fill="none" stroke="url(#grad-vibrant)" 
+        stroke-width="6" stroke-linecap="round"
+        filter="url(#glow-icon)"/>
+
+  <!-- ECG / PULSE WAVE (continues from body) -->
+  <path d="M70 44 L78 44 L84 27 L93 75 L101 38 L108 55 L132 55" 
+        fill="none" stroke="url(#grad-pulse)" 
+        stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"
+        filter="url(#glow-icon)"/>
+
+  <!-- Inner connection dot (origin) -->
+  <circle cx="70" cy="44" r="4" fill="#EC4899" filter="url(#glow-icon)"/>
+
+  <!-- End dot with amber/cyan glow (the notification "sent" indicator) -->
+  <circle cx="132" cy="55" r="7" fill="url(#grad-pulse)" filter="url(#glow-icon)"/>
+  <circle cx="132" cy="55" r="3.5" fill="white" opacity="0.9"/>
+
+  <!-- Small orbit connection node top-right of icon -->
+  <circle cx="88" cy="22" r="3.5" fill="#F97316" opacity="0.85" filter="url(#glow-icon)"/>
+  <line x1="67" y1="27" x2="86" y2="23" stroke="#F97316" stroke-width="1.2" opacity="0.45"/>
+
+  <!-- ══════════════════════════════════════
+       WORDMARK TEXT (right side)
+  ════════════════════════════════════════ -->
+
+  <!-- "client" in white/light -->
+  <text x="150" y="75"
+        font-family="'Inter','Outfit','Helvetica Neue',Arial,sans-serif"
+        font-size="46"
+        font-weight="800"
+        letter-spacing="-1.5"
+        fill="#F1F5F9">client</text>
+
+  <!-- "pulse" in vibrant teal/cyan gradient -->
+  <text x="283" y="75"
+        font-family="'Inter','Outfit','Helvetica Neue',Arial,sans-serif"
+        font-size="46"
+        font-weight="800"
+        letter-spacing="-1.5"
+        fill="url(#grad-text-pulse)">pulse</text>
+
+  <!-- Subtle tagline (optional, very small) -->
+  <text x="151" y="94"
+        font-family="'Inter','Helvetica Neue',Arial,sans-serif"
+        font-size="10"
+        font-weight="500"
+        letter-spacing="3"
+        fill="#64748B"
+        text-anchor="start">CRM · RECORDATORIOS · WHATSAPP</text>
 </svg>

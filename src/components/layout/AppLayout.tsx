@@ -48,9 +48,13 @@ const Sidebar = ({ isOpen, setOpen }: { isOpen: boolean, setOpen: (o: boolean) =
       className="hidden md:flex flex-col h-screen bg-slate-900 border-r border-slate-800 fixed left-0 top-0 z-50 text-slate-400 overflow-hidden group shadow-2xl"
     >
       {/* Branding */}
-      <div className="h-20 flex items-center px-6 gap-3 w-full">
-        <div className="w-10 h-10 flex-shrink-0 flex items-center justify-center relative">
-          <img src="/logo_clientpulse_v2.svg" alt="ClientPulse Logo" className="w-9 h-9 drop-shadow-lg" />
+      <div className="h-20 flex items-center px-4 gap-3 w-full overflow-hidden">
+        <div className="flex-shrink-0">
+          {isOpen ? (
+            <img src="/logo_clientpulse_v2.svg" alt="ClientPulse Logo" className="h-9 w-auto min-w-[140px]" />
+          ) : (
+            <img src="/logo_clientpulse_v2.svg" alt="ClientPulse Logo" className="h-8 w-8 object-left object-cover" />
+          )}
         </div>
         {isOpen && (
           <motion.span 
@@ -180,8 +184,7 @@ const MobileNav = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }
         >
           <div className="h-20 flex items-center justify-between mb-4">
              <div className="flex items-center gap-3">
-               <img src="/logo_clientpulse_v2.svg" alt="ClientPulse Logo" className="w-8 h-8 drop-shadow-md" />
-               <span className="font-display font-bold text-slate-800">clientpulse</span>
+               <img src="/logo_clientpulse_v2.svg" alt="ClientPulse Logo" className="h-9 w-auto" />
              </div>
              <button onClick={onClose} className="p-2 bg-slate-100 rounded-xl"><X className="w-5 h-5 text-slate-500" /></button>
           </div>
