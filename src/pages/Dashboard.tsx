@@ -20,6 +20,7 @@ import {
 import AppLayout from '../components/layout/AppLayout'
 import { cn } from '../utils/cn'
 import { useAuthStore } from '../store/authStore'
+import { ClientService, ReminderService } from '../services/firebase/firestore'
 
 // Metric Card Component
 const MetricCard = ({ 
@@ -67,7 +68,40 @@ const MetricCard = ({
 
 const Dashboard = () => {
   const { user } = useAuthStore()
+  const [stats, setStats] = React.useState({
+    clients: 0,
+    messagesToday: 0,
+    scheduled: 0,
+    successRate: 98.2
+  })
+  const [recentReminders, setRecentReminders] = React.useState<any[]>([])
+  const [loading, setLoading] = React.useState(true)
   const hour = new Date().getHours()
+
+  React.useEffect(() => {
+    const fetchDashboardData = async () => {
+      if (!user) return
+      try {
+        const clients = await ClientService.getClients(user.uid)
+        const pending = await ReminderService.getPendingReminders(user.uid)
+        
+        setStats(prev => ({
+          ...prev,
+          clients: clients.length,
+          scheduled: pending.length
+        }))
+
+        // Get some "recent" reminders (sent or pending)
+        // For now, just show the pending ones as activity
+        setRecentReminders(pending.slice(0, 5))
+      } catch (err) {
+        console.error(err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchDashboardData()
+  }, [user])
   
   const getGreeting = () => {
     if (hour < 12) return { text: '¡Buen día', icon: Coffee }
@@ -110,7 +144,7 @@ const Dashboard = () => {
           <MetricCard 
             icon={Users} 
             label="Clientes Activos" 
-            value="1,284" 
+            value={stats.clients} 
             trend="up" 
             trendValue="+12%" 
             color="text-teal-500" 
@@ -119,7 +153,7 @@ const Dashboard = () => {
           <MetricCard 
             icon={MessageSquare} 
             label="Mensajes Hoy" 
-            value="42" 
+            value={stats.messagesToday} 
             trend="up" 
             trendValue="+5" 
             color="text-sky-500" 
@@ -128,14 +162,14 @@ const Dashboard = () => {
           <MetricCard 
             icon={Calendar} 
             label="Programados" 
-            value="18" 
+            value={stats.scheduled} 
             color="text-amber-500" 
             bgGradient="bg-gradient-to-br from-amber-500 to-amber-700"
           />
           <MetricCard 
             icon={TrendingUp} 
             label="Tasa de Éxito" 
-            value="98.2%" 
+            value={`${stats.successRate}%`} 
             trend="up" 
             trendValue="+0.4%" 
             color="text-indigo-500" 
@@ -180,39 +214,47 @@ const Dashboard = () => {
              </div>
 
              <div className="space-y-4">
-                {[1, 2, 3, 4, 5].map((i) => (
-                   <motion.div 
-                     key={i}
-                     initial={{ opacity: 0, x: -10 }}
-                     animate={{ opacity: 1, x: 0 }}
-                     transition={{ delay: i * 0.05 }}
-                     className="glass p-4 rounded-3xl flex items-center justify-between border-slate-100 hover:border-teal-200 transition-all hover:bg-slate-50 relative overflow-hidden group shadow-sm hover:shadow-md cursor-pointer"
-                   >
-                      <div className="flex items-center gap-4">
-                         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center font-display font-bold text-slate-500 text-lg border-2 border-white shadow-sm ring-1 ring-slate-100 ring-offset-2">
-                            {['JD', 'MS', 'AK', 'RL', 'VP'][i-1]}
-                         </div>
-                         <div>
-                            <p className="font-bold text-slate-800 text-base leading-tight">Juan Delgado (VIP)</p>
-                            <div className="flex items-center gap-3 mt-1">
-                               <span className="text-xs font-semibold text-slate-400 flex items-center gap-1">
-                                  <Send className="w-3 h-3" /> Recordatorio mensual
-                               </span>
-                               <span className="w-1 h-1 bg-slate-300 rounded-full" />
-                               <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-500 bg-emerald-50 px-2 py-0.5 rounded-full">ENVIADO</span>
+                {loading ? (
+                   [1,2,3].map(i => <div key={i} className="h-20 bg-slate-100 animate-pulse rounded-3xl" />)
+                ) : recentReminders.length > 0 ? (
+                   recentReminders.map((reminder, i) => (
+                      <motion.div 
+                        key={reminder.id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        className="glass p-4 rounded-3xl flex items-center justify-between border-slate-100 hover:border-teal-200 transition-all hover:bg-slate-50 relative overflow-hidden group shadow-sm hover:shadow-md cursor-pointer"
+                      >
+                         <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-50 to-teal-100 flex items-center justify-center font-display font-bold text-teal-600 text-lg border-2 border-white shadow-sm">
+                               {reminder.clientName.charAt(0)}
+                            </div>
+                            <div>
+                               <p className="font-bold text-slate-800 text-base leading-tight">{reminder.clientName}</p>
+                               <div className="flex items-center gap-3 mt-1">
+                                  <span className="text-xs font-semibold text-slate-400 flex items-center gap-1">
+                                     <Clock className="w-3 h-3" /> {reminder.status === 'pending' ? 'Pendiente' : 'Enviado'}
+                                  </span>
+                                  <span className="w-1 h-1 bg-slate-300 rounded-full" />
+                                  <span className={cn(
+                                     "text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full",
+                                     reminder.status === 'pending' ? "text-amber-500 bg-amber-50" : "text-emerald-500 bg-emerald-50"
+                                  )}>
+                                     {reminder.status === 'pending' ? 'PRÓXIMO' : 'ENVIADO'}
+                                  </span>
+                               </div>
                             </div>
                          </div>
-                      </div>
-                      <div className="text-right flex flex-col items-end gap-1">
-                         <p className="text-xs font-bold text-slate-500">hace {i * 15} min</p>
-                         <div className="flex gap-1">
-                            <div className="w-1.5 h-1.5 rounded-full bg-teal-500/20" />
-                            <div className="w-1.5 h-1.5 rounded-full bg-teal-500/20" />
-                            <div className="w-1.5 h-1.5 rounded-full bg-teal-500" />
+                         <div className="text-right">
+                            <p className="text-xs font-bold text-slate-500">{new Date(reminder.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                          </div>
-                      </div>
-                   </motion.div>
-                ))}
+                      </motion.div>
+                   ))
+                ) : (
+                   <div className="p-8 text-center border-2 border-dashed border-slate-100 rounded-[32px]">
+                      <p className="text-slate-400 font-medium italic">No hay actividad reciente aún.</p>
+                   </div>
+                )}
              </div>
           </div>
 

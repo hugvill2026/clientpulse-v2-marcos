@@ -1,4 +1,3 @@
-import React from 'react'
 import { motion } from 'framer-motion'
 import { User, Mail, Lock, Building2, CheckCircle2, ArrowRight } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -6,6 +5,9 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { cn } from '../utils/cn'
+
+import { useAuth } from '../services/firebase/auth.provider'
+import toast from 'react-hot-toast'
 
 // Validation Schema
 const registerSchema = z.object({
@@ -36,10 +38,21 @@ const Register = () => {
 
   const password = watch('password', '')
 
+  const { registerWithEmail } = useAuth()
+
   const onSubmit = async (data: RegisterForm) => {
-    console.log('Register data:', data)
-    // TODO: Firebase Registration
-    navigate('/onboarding')
+    try {
+      await registerWithEmail(data.email, data.password)
+      toast.success('¡Cuenta creada con éxito! Bienvenido 🎉')
+      navigate('/onboarding')
+    } catch (error: any) {
+      console.error(error)
+      if (error.code === 'auth/email-already-in-use') {
+        toast.error('Este email ya está registrado.')
+      } else {
+        toast.error('Error al crear la cuenta. Inténtalo de nuevo.')
+      }
+    }
   }
 
   return (
