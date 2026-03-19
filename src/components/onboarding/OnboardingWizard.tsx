@@ -169,40 +169,36 @@ const OnboardingWizard = () => {
                     <div className="flex gap-4 p-4 bg-emerald-50 rounded-3xl border border-emerald-100 mb-8">
                        <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-emerald-600 shadow-sm"><Smartphone className="w-6 h-6" /></div>
                        <div className="flex-1">
-                          <p className="text-sm font-bold text-emerald-900 uppercase tracking-widest leading-none mt-1">Sistema de Alertas WhatsApp</p>
-                          <p className="text-[10px] text-emerald-700 font-medium">Recibirás un mensaje en tu WhatsApp cada vez que debas contactar a un cliente.</p>
+                          <p className="text-sm font-bold text-emerald-900 uppercase tracking-widest leading-none mt-1">Envío por Enlace Directo (Gratis e Ilimitado)</p>
+                          <p className="text-[10px] text-emerald-700 font-medium">Usarás tu propio WhatsApp sin APIs costosas. <b>Tus clientes NO necesitan registrarse en nada</b>, solo reciben tus mensajes.</p>
                        </div>
-                       <ShieldCheck className="w-8 h-8 text-emerald-600 m-auto mr-2" />
+                       <CheckCircle2 className="w-8 h-8 text-emerald-600 m-auto mr-2" />
                     </div>
 
-                    <div className="space-y-8">
-                       <div className="space-y-1">
-                          <label className="text-xs font-bold text-slate-400 flex items-center gap-2 mb-2"><CheckCircle2 className="w-4 h-4 text-teal-500" /> Paso A: Tu número</label>
-                          <div className="flex gap-4">
-                             <div className="w-20">
-                                <input type="text" value="+593" readOnly className="input-premium h-14 text-center text-sm font-bold bg-slate-50" />
-                             </div>
-                             <input type="tel" placeholder="091 234 5678" className="input-premium h-14 flex-1 text-sm font-bold tracking-widest" />
-                          </div>
-                       </div>
+                    <div className="card-premium border-2 border-emerald-100 bg-white p-6 mb-6">
+                       <h3 className="font-bold text-slate-800 text-lg mb-2">¿Cómo funciona el envío?</h3>
+                       <p className="text-sm text-slate-500 leading-relaxed">
+                          Cuando llegue la hora de un recordatorio, el sistema te avisará. Solo tendrás que hacer <b>click en "Enviar"</b> y se abrirá tu WhatsApp con el mensaje y la imagen listos. Así garantizamos que sea <span className="text-emerald-600 font-bold">100% gratuito y sin límites</span>.
+                       </p>
+                    </div>
 
-                       <div className="bg-slate-900 rounded-[32px] p-8 space-y-6 text-white overflow-hidden relative">
-                          <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/20 blur-3xl -mr-16 -mt-16" />
-                          <p className="text-xs font-bold text-teal-400 uppercase tracking-widest flex items-center gap-2">Paso B: Conectar CallMeBot</p>
-                          <div className="space-y-4">
-                             <div className="flex gap-4 items-start group">
-                                <div className="w-8 h-8 rounded-full bg-white/10 flex flex-shrink-0 items-center justify-center font-bold text-sm">1</div>
-                                <p className="text-xs text-slate-300 leading-relaxed pt-1 flex-1">Envía el mensaje <code className="bg-white/20 px-2 py-0.5 rounded text-white select-all">I allow callmebot to send me messages</code> al número <span className="text-white font-bold tracking-wider">+34 644 59 32 07</span></p>
+                    <div className="space-y-4">
+                       <div className="flex items-center justify-between px-2">
+                          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Opcional: Automatización de Alertas</p>
+                          <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-bold">RECOMENDADO</span>
+                       </div>
+                       
+                       <div className="bg-slate-50 rounded-3xl p-6 border border-slate-200">
+                          <p className="text-xs text-slate-500 mb-4 leading-relaxed">
+                             Si quieres que <b>el sistema te avise a TU WhatsApp</b> cuando debas enviarle un mensaje a un cliente, configura CallMeBot aquí abajo. Si prefieres usar solo el tablero, puedes saltar este paso.
+                          </p>
+                          <div className="flex gap-4 items-center mb-4">
+                             <div className="w-20">
+                                <input type="text" value="+593" readOnly className="input-premium h-12 text-center text-sm font-bold bg-white" />
                              </div>
-                             <div className="flex gap-4 items-start group">
-                                <div className="w-8 h-8 rounded-full bg-white/10 flex flex-shrink-0 items-center justify-center font-bold text-sm">2</div>
-                                <div className="flex-1 space-y-2">
-                                   <p className="text-xs text-slate-300 leading-relaxed pt-1">Recibirás una API Key. Pégala aquí:</p>
-                                   <input type="password" placeholder="Tu API Key recibida..." className="w-full bg-white/5 border border-white/10 rounded-2xl h-12 px-6 text-sm text-white focus:bg-white/10 transition-all outline-none" />
-                                </div>
-                             </div>
+                             <input type="tel" placeholder="Tu número para recibir alertas" className="input-premium h-12 flex-1 text-sm" />
                           </div>
-                          <button className="w-full py-4 bg-teal-500 text-white rounded-2xl font-bold text-sm hover:bg-teal-600 transition-all shadow-xl shadow-teal-500/20">Probar Conexión</button>
+                          <button className="text-xs font-bold text-teal-600 hover:text-teal-700 transition-colors uppercase tracking-widest px-2">Configurar alertas automáticas (Ir a CallMeBot)</button>
                        </div>
                     </div>
                  </motion.div>
