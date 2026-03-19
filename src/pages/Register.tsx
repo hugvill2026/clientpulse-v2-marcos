@@ -45,9 +45,10 @@ const Register = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6 selection:bg-teal-100">
       {/* Background Graphic */}
-      <div className="fixed inset-0 pointer-events-none opacity-40 overflow-hidden">
-        <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-teal-500/10 blur-[100px] rounded-full -mr-1/4 -mt-1/4" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-sky-500/10 blur-[100px] rounded-full -ml-1/4 -mb-1/4" />
+      <div className="fixed inset-0 pointer-events-none opacity-60 overflow-hidden">
+        <div className="absolute top-[-10%] right-[-10%] w-[600px] h-[600px] bg-teal-500/20 blur-[120px] rounded-full" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-sky-500/20 blur-[120px] rounded-full" />
+        <div className="absolute top-[40%] left-[20%] w-[300px] h-[300px] bg-purple-500/10 blur-[90px] rounded-full" />
       </div>
 
       <motion.div 
@@ -58,17 +59,16 @@ const Register = () => {
         <div className="card-premium p-10 border-none shadow-2xl bg-white/90">
           <div className="flex flex-col items-center mb-10 gap-4">
             <motion.div 
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ type: "spring", stiffness: 200, damping: 15 }}
-              className="flex items-center gap-3"
+              initial={{ scale: 0.8, opacity: 0, filter: 'blur(10px)' }}
+              animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }}
+              transition={{ type: "spring", stiffness: 100, damping: 20 }}
+              className="mb-6"
             >
-               <img src="/logo_clientpulse_v2.svg" alt="ClientPulse V2 Logo" className="w-12 h-12" />
-               <span className="font-display font-semibold text-2xl text-slate-900 tracking-tight">clientpulse</span>
+               <img src="/logo_clientpulse_v2.svg" alt="ClientPulse V2 Logo" className="h-16 w-auto" />
             </motion.div>
-             <div className="text-center space-y-2">
-                <h1 className="text-3xl font-bold font-display text-slate-900 tracking-tight">Crea tu cuenta gratis</h1>
-                <p className="text-slate-500 font-interface text-sm">Empieza a gestionar tus clientes de forma inteligente hoy mismo.</p>
+             <div className="text-center space-y-3">
+                <h1 className="text-4xl font-black font-display text-slate-900 tracking-tight leading-[1.1]">Únete a <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-cyan-500">la élite</span> comercial</h1>
+                <p className="text-slate-500 font-interface text-base max-w-[320px] mx-auto leading-relaxed">Configura tu centro de mando y empieza a transformar prospectos en clientes leales hoy.</p>
              </div>
           </div>
 

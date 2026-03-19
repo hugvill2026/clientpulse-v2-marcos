@@ -72,46 +72,56 @@ const Login = () => {
 
         <div className="relative z-10 flex-1 flex flex-col justify-between p-16">
           <motion.div 
-            initial={{ x: -30, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 180, damping: 20 }}
+            initial={{ scale: 0.8, opacity: 0, filter: 'blur(10px)' }}
+            animate={{ scale: 1, opacity: 1, filter: 'blur(0px)' }}
+            transition={{ type: "spring", stiffness: 100, damping: 20 }}
+            className="mb-8"
           >
-             <img src="/logo_clientpulse_v2.svg" alt="ClientPulse V2 Logo" className="h-12 w-auto" />
+             <img src="/logo_clientpulse_v2.svg" alt="ClientPulse V2 Logo" className="h-20 w-auto filter drop-shadow-[0_0_15px_rgba(13,148,136,0.3)]" />
           </motion.div>
 
           <div className="max-w-md">
             <motion.h1 
-              initial={{ y: 20, opacity: 0 }}
+              initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="text-5xl font-bold text-white leading-[1.1] mb-6 font-display"
+              transition={{ delay: 0.2, duration: 0.8 }}
+              className="text-6xl font-black text-white leading-[1.05] mb-8 font-display tracking-tight"
             >
-              La gestión de clientes <span className="text-teal-400">reimaginada</span>.
+              Control total de tus <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400">clientes</span>.
             </motion.h1>
             <motion.p 
                initial={{ y: 20, opacity: 0 }}
                animate={{ y: 0, opacity: 1 }}
-               transition={{ delay: 0.3 }}
-               className="text-slate-400 text-lg leading-relaxed font-interface"
+               transition={{ delay: 0.4, duration: 0.8 }}
+               className="text-slate-400 text-xl leading-relaxed font-interface max-w-sm"
             >
-              Automatiza tus recordatorios, centraliza tu base de datos y mejora el pulso de tu negocio con inteligencia real.
+              La plataforma definitiva para gestionar, automatizar y escalar tu relación con cada cliente a través de WhatsApp.
             </motion.p>
           </div>
 
-          <div className="flex items-center gap-6 text-slate-500 text-sm font-medium">
-            <span className="flex items-center gap-2 hover:text-white transition-colors cursor-pointer group">
-               <div className="w-1.5 h-1.5 rounded-full bg-slate-700 group-hover:bg-teal-500 transition-colors" />
-               Empresas
-            </span>
-            <span className="flex items-center gap-2 hover:text-white transition-colors cursor-pointer group">
-               <div className="w-1.5 h-1.5 rounded-full bg-slate-700 group-hover:bg-teal-500 transition-colors" />
-               Freelancers
-            </span>
-            <span className="flex items-center gap-2 hover:text-white transition-colors cursor-pointer group">
-               <div className="w-1.5 h-1.5 rounded-full bg-slate-700 group-hover:bg-teal-500 transition-colors" />
-               Vendedores
-            </span>
-          </div>
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="flex flex-wrap items-center gap-6 text-slate-500 text-sm font-semibold uppercase tracking-widest"
+          >
+            {[
+              { label: 'Empresas', color: 'bg-teal-500' },
+              { label: 'Freelancers', color: 'bg-sky-500' },
+              { label: 'Vendedores', color: 'bg-purple-500' }
+            ].map((item, i) => (
+              <motion.span 
+                key={item.label}
+                initial={{ x: -10, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                transition={{ delay: 0.7 + (i * 0.1) }}
+                className="flex items-center gap-2 hover:text-white transition-colors cursor-default group"
+              >
+                 <div className={cn("w-2 h-2 rounded-full", item.color, "shadow-[0_0_8px] shadow-current opacity-60 group-hover:opacity-100 transition-opacity")} />
+                 {item.label}
+              </motion.span>
+            ))}
+          </motion.div>
         </div>
       </motion.div>
 

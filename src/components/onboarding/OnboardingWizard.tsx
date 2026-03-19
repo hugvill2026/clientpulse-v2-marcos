@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   CheckCircle2, 
@@ -13,7 +13,8 @@ import {
   ShieldCheck,
   Globe,
   Camera,
-  MessageSquare
+  MessageSquare,
+  Clock
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { cn } from '../../utils/cn'
@@ -86,10 +87,17 @@ const OnboardingWizard = () => {
                     <div className="w-24 h-24 bg-teal-500 rounded-[40px] flex items-center justify-center text-white shadow-2xl shadow-teal-500/20 animate-bounce group-hover:rotate-6 transition-transform">
                        <PartyPopper className="w-12 h-12" />
                     </div>
-                    <div className="space-y-4 max-w-lg">
-                       <h1 className="text-4xl font-bold font-display text-slate-900 tracking-tight">¡Bienvenido a clientpulse!</h1>
-                       <p className="text-slate-500 text-lg leading-relaxed font-interface">
-                          En solo 4 rápidos pasos configuraremos tu cuenta para que empieces a gestionar tus clientes como un profesional.
+                    <div className="space-y-4 max-w-lg mb-4">
+                       <h1 className="text-5xl font-black font-display text-slate-900 tracking-tight leading-tight">
+                          ¡Bienvenido a <span className="text-teal-500">clientpulse</span>!
+                       </h1>
+                       <p className="text-slate-500 text-xl leading-relaxed font-interface">
+                          Hola, soy tu <span className="text-teal-600 font-bold">Asistente de Cuidado al Cliente</span>. Estoy aquí para ayudarte a transformar tu negocio en una máquina de fidelización en solo 2 minutos.
+                       </p>
+                    </div>
+                    <div className="bg-teal-50 p-6 rounded-3xl border border-teal-100 max-w-md">
+                       <p className="text-sm text-teal-800 font-medium">
+                          "La clave del éxito no es vender una vez, sino mantener el pulso de la relación con cada cliente." - <span className="font-bold">Coach ClientPulse</span>
                        </p>
                     </div>
                     <button onClick={nextStep} className="btn-primary h-14 text-lg px-12 group">
@@ -250,38 +258,35 @@ const OnboardingWizard = () => {
                     exit={{ opacity: 0, x: -50 }}
                     className="flex-1 space-y-10 flex flex-col items-center justify-center"
                  >
-                    <div className="w-20 h-20 bg-amber-50 rounded-[32px] flex items-center justify-center text-amber-500 shadow-xl shadow-amber-500/10 mb-2 border border-amber-100">
-                       <LayoutGrid className="w-10 h-10" />
-                    </div>
-                    <div className="text-center space-y-4 max-w-sm mb-2">
-                       <h2 className="text-2xl font-bold font-display text-slate-900 tracking-tight uppercase">Crea tu primera categoría</h2>
-                       <p className="text-xs text-slate-500 font-medium">Organiza a tus clientes por grupos de interés o importancia.</p>
-                    </div>
+                     <motion.div 
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1, rotate: [0, 10, -10, 0] }}
+                        className="w-24 h-24 bg-gradient-to-br from-teal-400 to-emerald-500 rounded-[40px] flex items-center justify-center text-white shadow-2xl shadow-teal-500/30 mb-4"
+                     >
+                        <PartyPopper className="w-12 h-12" />
+                     </motion.div>
+                     <div className="text-center space-y-4 max-w-sm mb-6">
+                        <h2 className="text-4xl font-black font-display text-slate-900 tracking-tight">¡TODO LISTO! 🚀</h2>
+                        <p className="text-slate-500 font-medium text-lg">
+                           Ya eres parte de la nueva era de gestión de clientes. Tu tablero te espera para empezar a crecer.
+                        </p>
+                     </div>
 
-                    <div className="w-full max-w-md space-y-6">
-                       <div className="space-y-1">
-                          <label className="text-xs font-bold text-slate-600 px-1 uppercase tracking-widest">Nombre de categoría</label>
-                          <input type="text" placeholder="Ej: Clientes VIP, Prospectos, Demo..." className="input-premium h-14 text-sm font-bold shadow-sm" />
-                       </div>
-                       
-                       <div className="space-y-3">
-                          <label className="text-xs font-bold text-slate-600 px-1 uppercase tracking-widest">Selecciona un color distintivo</label>
-                          <div className="flex flex-wrap gap-4 p-4 bg-slate-50 rounded-3xl border border-slate-100">
-                             {['#F43F5E', '#10B981', '#3B82F6', '#F59E0B', '#8B5CF6', '#EC4899', '#0EA5E9', '#64748B'].map(color => (
-                                <button 
-                                   key={color} 
-                                   className="w-8 h-8 rounded-full cursor-pointer hover:scale-125 transition-transform shadow-lg shadow-black/5 ring-4 ring-transparent hover:ring-white border border-black/5" 
-                                   style={{ backgroundColor: color }} 
-                                />
-                             ))}
-                          </div>
-                       </div>
-                    </div>
-                    
-                    <button onClick={finish} className="btn-primary h-14 w-full max-w-md text-base mt-2 flex items-center justify-center gap-3">
-                       <span>Completar y finalizar</span>
-                       <Zap className="w-5 h-5" />
-                    </button>
+                     <div className="w-full max-w-md p-6 bg-slate-900 rounded-[32px] text-white space-y-4 mb-8">
+                        <div className="flex items-center gap-3">
+                           <ShieldCheck className="w-6 h-6 text-teal-400" />
+                           <span className="font-black uppercase tracking-widest text-[10px]">Tu cuenta está protegida y lista</span>
+                        </div>
+                        <p className="text-xs text-slate-400 leading-relaxed font-medium">
+                           Hemos sincronizado tus preferencias. Recuerda que puedes cambiar cualquier ajuste desde tu perfil en cualquier momento.
+                        </p>
+                     </div>
+                     
+                     <button onClick={finish} className="btn-primary h-16 w-full max-w-md text-lg font-black mt-2 flex items-center justify-center gap-4 relative overflow-hidden group">
+                        <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                        <span>ENTRAR AL PANEL</span>
+                        <Zap className="w-6 h-6 fill-amber-300 text-amber-300" />
+                     </button>
                  </motion.div>
               )}
            </AnimatePresence>

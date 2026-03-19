@@ -1,13 +1,13 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  BarChart3, 
-  Users, 
-  Settings, 
-  Calendar, 
-  History, 
-  HelpCircle, 
-  MessageSquare, 
+import {
+  BarChart3,
+  Users,
+  Settings,
+  Calendar,
+  History,
+  HelpCircle,
+  MessageSquare,
   LayoutGrid,
   ChevronLeft,
   Search,
@@ -15,7 +15,8 @@ import {
   User,
   PlusCircle,
   Menu,
-  X
+  X,
+  Clock
 } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '../../utils/cn'
@@ -48,12 +49,12 @@ const Sidebar = ({ isOpen, setOpen }: { isOpen: boolean, setOpen: (o: boolean) =
       className="hidden md:flex flex-col h-screen bg-slate-900 border-r border-slate-800 fixed left-0 top-0 z-50 text-slate-400 overflow-hidden group shadow-2xl"
     >
       {/* Branding */}
-      <div className="h-20 flex items-center px-4 gap-3 w-full overflow-hidden">
-        <div className="flex-shrink-0">
+      <div className="h-24 flex items-center px-4 gap-3 w-full overflow-hidden border-b border-white/5 bg-white/5">
+        <div className="flex-shrink-0 animate-pulse-subtle">
           {isOpen ? (
-            <img src="/logo_clientpulse_v2.svg" alt="ClientPulse Logo" className="h-9 w-auto min-w-[140px]" />
+            <img src="/logo_clientpulse_v2.svg" alt="ClientPulse Logo" className="h-[52px] w-auto min-w-[180px] drop-shadow-[0_0_15px_rgba(20,184,166,0.2)]" />
           ) : (
-            <img src="/logo_clientpulse_v2.svg" alt="ClientPulse Logo" className="h-8 w-8 object-left object-cover" />
+            <img src="/logo_clientpulse_v2.svg" alt="ClientPulse Logo" className="h-10 w-10 object-left object-cover scale-150 ml-1" />
           )}
         </div>
         {isOpen && (

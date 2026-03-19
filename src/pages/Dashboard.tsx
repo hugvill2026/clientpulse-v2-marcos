@@ -10,10 +10,16 @@ import {
   Clock, 
   ChevronRight,
   Send,
-  BellRing
+  BellRing,
+  Sparkles,
+  Sun,
+  Moon,
+  Coffee,
+  Lightbulb
 } from 'lucide-react'
 import AppLayout from '../components/layout/AppLayout'
 import { cn } from '../utils/cn'
+import { useAuthStore } from '../store/authStore'
 
 // Metric Card Component
 const MetricCard = ({ 
@@ -22,45 +28,83 @@ const MetricCard = ({
   value, 
   trend, 
   trendValue, 
-  color 
+  color,
+  bgGradient 
 }: { 
   icon: any, 
   label: string, 
   value: string | number, 
   trend?: 'up' | 'down', 
   trendValue?: string, 
-  color: string 
+  color: string,
+  bgGradient: string
 }) => (
   <motion.div 
-    whileHover={{ y: -5 }}
-    className="card-premium h-full flex flex-col justify-between"
+    whileHover={{ y: -5, scale: 1.02 }}
+    className={cn("card-premium h-full flex flex-col justify-between relative overflow-hidden group", bgGradient)}
   >
-    <div className="flex items-start justify-between mb-4">
-      <div className={cn("p-3 rounded-2xl bg-opacity-10", color.replace('text-', 'bg-').replace('500', '500/10'))}>
-        <Icon className={cn("w-6 h-6", color)} />
+    <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 blur-3xl -mr-8 -mt-8 group-hover:bg-white/20 transition-all" />
+    <div className="flex items-start justify-between mb-4 relative z-10">
+      <div className={cn("p-3 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30")}>
+        <Icon className={cn("w-6 h-6 text-white")} />
       </div>
       {trend && (
         <div className={cn(
-          "flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full",
-          trend === 'up' ? "bg-emerald-50 text-emerald-600" : "bg-rose-50 text-rose-600"
+          "flex items-center gap-1 text-[10px] font-black px-2 py-1 rounded-lg backdrop-blur-md",
+          trend === 'up' ? "bg-emerald-400/20 text-emerald-100" : "bg-rose-400/20 text-rose-100"
         )}>
           {trend === 'up' ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
           {trendValue}
         </div>
       )}
     </div>
-    <div>
-      <h3 className="text-slate-500 text-sm font-bold uppercase tracking-wider mb-1">{label}</h3>
-      <p className="text-3xl font-bold text-slate-900 font-display">{value}</p>
+    <div className="relative z-10">
+      <h3 className="text-white/60 text-[10px] font-black uppercase tracking-[0.2em] mb-1">{label}</h3>
+      <p className="text-3xl font-black text-white font-display tracking-tight">{value}</p>
     </div>
   </motion.div>
 )
 
 const Dashboard = () => {
+  const { user } = useAuthStore()
+  const hour = new Date().getHours()
+  
+  const getGreeting = () => {
+    if (hour < 12) return { text: '¡Buen día', icon: Coffee }
+    if (hour < 18) return { text: '¡Buenas tardes', icon: Sun }
+    return { text: '¡Buenas noches', icon: Moon }
+  }
+
+  const greeting = getGreeting()
+
   return (
     <AppLayout title="Panel de Control">
-      <div className="space-y-10">
+      <div className="space-y-10 pb-10">
         
+        {/* Welcome Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+           <div className="space-y-3">
+              <motion.div 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="flex items-center gap-3 text-teal-600 font-black uppercase tracking-[0.3em] text-[10px]"
+              >
+                 <greeting.icon className="w-4 h-4" />
+                 {greeting.text}!
+              </motion.div>
+              <h1 className="text-4xl md:text-5xl font-black text-slate-900 font-display tracking-tight leading-none">
+                 Hola, {user?.name?.split(' ')[0] || 'Marcos'} <span className="text-teal-500">👋</span>
+              </h1>
+              <p className="text-slate-500 font-interface text-lg max-w-xl leading-relaxed">
+                 Hoy tienes <span className="text-slate-900 font-bold">18 recordatorios pendientes</span>. Tu negocio está en movimiento y nosotros estamos aquí para ayudarte.
+              </p>
+           </div>
+           <button className="btn-primary h-14 px-8 flex items-center justify-center gap-3 shadow-xl shadow-teal-500/30">
+              <Sparkles className="w-5 h-5 text-amber-300 fill-amber-300" />
+              <span>Ver Sugerencias hoy</span>
+           </button>
+        </div>
+
         {/* Quick Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <MetricCard 
@@ -70,6 +114,7 @@ const Dashboard = () => {
             trend="up" 
             trendValue="+12%" 
             color="text-teal-500" 
+            bgGradient="bg-gradient-to-br from-teal-500 to-teal-700"
           />
           <MetricCard 
             icon={MessageSquare} 
@@ -78,12 +123,14 @@ const Dashboard = () => {
             trend="up" 
             trendValue="+5" 
             color="text-sky-500" 
+            bgGradient="bg-gradient-to-br from-sky-500 to-sky-700"
           />
           <MetricCard 
             icon={Calendar} 
             label="Programados" 
             value="18" 
             color="text-amber-500" 
+            bgGradient="bg-gradient-to-br from-amber-500 to-amber-700"
           />
           <MetricCard 
             icon={TrendingUp} 
@@ -92,8 +139,30 @@ const Dashboard = () => {
             trend="up" 
             trendValue="+0.4%" 
             color="text-indigo-500" 
+            bgGradient="bg-gradient-to-br from-indigo-500 to-indigo-700"
           />
         </div>
+
+        {/* Coach Card - Didactic Element */}
+        <motion.div 
+           initial={{ opacity: 0, y: 20 }}
+           animate={{ opacity: 1, y: 0 }}
+           transition={{ delay: 0.2 }}
+           className="bg-white border-2 border-dashed border-teal-100 rounded-[40px] p-8 flex flex-col md:flex-row items-center gap-8 group hover:border-teal-300 transition-colors"
+        >
+           <div className="w-20 h-20 bg-teal-50 rounded-3xl flex items-center justify-center text-teal-600 shadow-inner group-hover:scale-110 transition-transform">
+              <Lightbulb className="w-10 h-10" />
+           </div>
+           <div className="flex-1 space-y-2 text-center md:text-left">
+              <h3 className="text-xl font-bold text-slate-800">Tip de ClientPulse Coach:</h3>
+              <p className="text-slate-500 text-base leading-relaxed">
+                 ¿Sabías que los mensajes enviados entre las <span className="text-teal-600 font-bold">10:00 AM y 11:30 AM</span> tienen una tasa de respuesta un 40% superior? Prueba programar tus recordatorios VIP en este horario.
+              </p>
+           </div>
+           <button className="bg-slate-900 text-white px-8 py-4 rounded-[20px] font-bold text-sm hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10">
+              Personalizar horarios
+           </button>
+        </motion.div>
 
         {/* Main Dashboard Content */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
