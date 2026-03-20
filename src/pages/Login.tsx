@@ -16,6 +16,7 @@ import * as z from 'zod'
 import { cn } from '../utils/cn'
 import { useAuth } from '../services/firebase/auth.provider'
 import { UserService } from '../services/firebase/firestore'
+import { useAuthStore } from '../store/authStore'
 import toast from 'react-hot-toast'
 
 const loginSchema = z.object({
@@ -28,7 +29,14 @@ type LoginForm = z.infer<typeof loginSchema>
 const Login = () => {
   const [showPassword, setShowPassword] = React.useState(false)
   const navigate = useNavigate()
-  const { loginWithEmail, loginWithGoogle, logout } = useAuth()
+  const { loginWithEmail, loginWithGoogle } = useAuth()
+  const { isAuthenticated } = useAuthStore()
+
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard', { replace: true })
+    }
+  }, [isAuthenticated, navigate])
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
