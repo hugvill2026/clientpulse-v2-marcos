@@ -103,9 +103,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     logout,
   };
 
+  // Show loading screen while Firebase initializes
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-4">
+        <div className="w-12 h-12 border-4 border-teal-500/20 border-t-teal-500 rounded-full animate-spin" />
+        <span className="text-sm font-display font-medium text-slate-500 animate-pulse">clientpulse</span>
+      </div>
+    )
+  }
+
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };
