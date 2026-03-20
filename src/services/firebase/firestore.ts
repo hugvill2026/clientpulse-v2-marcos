@@ -115,6 +115,15 @@ export const ClientService = {
   },
 
   async deleteClient(clientId: string) {
+    // CASCADING DELETE: purge all reminders associated with this client to maintain institutional order
+    const remindersQuery = query(
+      collection(db, REMINDERS_COLLECTION),
+      where('clientId', '==', clientId)
+    );
+    const remindersSnap = await getDocs(remindersQuery);
+    const deletePromises = remindersSnap.docs.map(d => deleteDoc(d.ref));
+    await Promise.all(deletePromises);
+
     const docRef = doc(db, CLIENTS_COLLECTION, clientId);
     await deleteDoc(docRef);
   }

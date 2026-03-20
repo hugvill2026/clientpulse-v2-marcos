@@ -78,13 +78,17 @@ const Clients = () => {
   }
 
   const handleDeleteClient = async (id: string) => {
-    if (!window.confirm('¿Deseas eliminar permanentemente a este cliente?')) return
+    const confirmMessage = "⚠️ ADVERTENCIA INSTITUCIONAL: Al eliminar este cliente, se borrarán PERMANENTEMENTE todas sus configuraciones y MENSAJES PROGRAMADOS vinculados. Esta acción es definitiva y no se puede deshacer. ¿Deseas proceder con el borrado integral?";
+    
+    if (!window.confirm(confirmMessage)) return
+    
+    const toastId = toast.loading('Ejecutando protocolo de baja integral...');
     try {
       await ClientService.deleteClient(id)
-      toast.success('Registro eliminado')
+      toast.success('Registro y comunicaciones purgadas con éxito.', { id: toastId })
       fetchClients()
     } catch (e) {
-      toast.error('Error al eliminar')
+      toast.error('Fallo en el protocolo de borrado.', { id: toastId })
     }
   }
 
