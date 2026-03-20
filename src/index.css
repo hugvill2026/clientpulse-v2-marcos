@@ -33,11 +33,11 @@
 @layer components {
   /* Ultra-Premium Glassmorphism */
   .glass {
-    @apply bg-white/80 backdrop-blur-2xl border border-white/60 shadow-premiu
+    @apply bg-white/80 backdrop-blur-2xl border border-white/60 shadow-premi;
   }
   
   .glass-dark {
-    @apply bg-slate-950/90 backdrop-blur-3xl border border-white/10 shadow-2x;
+    @apply bg-slate-950/90 backdrop-blur-3xl border border-white/10 shadow-2;;
   }
 
   /* Institutional Components */
