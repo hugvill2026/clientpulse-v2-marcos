@@ -34,24 +34,18 @@ const Login = () => {
     resolver: zodResolver(loginSchema),
   })
 
-  // Soft Session Cleanup - Only clears non-auth data to avoid infinite loops
-  // This preserves the Zustand auth state while cleaning stale application data
+  // Soft Session Cleanup - Only clears app-specific non-auth data
+  // CRITICAL: Must preserve auth state to avoid infinite loops
   React.useEffect(() => {
-    // Only clear specific app keys, NOT the entire localStorage (which would kill auth state)
-    const appKeysToPreserve = ['clientpulse-auth', 'firebase-local-storage-cache'];
-    const allKeys = Object.keys(localStorage);
+    // Only clear specific known app keys that are safe to remove
+    const safeToRemove = [
+      'clientpulse-clients',
+      'clientpulse-settings',
+      'clientpulse-ui-state'
+    ];
 
-    allKeys.forEach(key => {
-      if (!appKeysToPreserve.some(preserveKey => key.startsWith(preserveKey.replace('-auth', '')) || key === preserveKey)) {
-        localStorage.removeItem(key);
-      }
-    });
-
-    // Also clean session storage but be more selective
-    Object.keys(sessionStorage).forEach(key => {
-      if (!key.includes('firebase') && !key.includes('auth')) {
-        sessionStorage.removeItem(key);
-      }
+    safeToRemove.forEach(key => {
+      localStorage.removeItem(key);
     });
   }, []);
 

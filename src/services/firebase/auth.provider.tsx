@@ -22,17 +22,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { setUser: setStoreUser, logout: clearStore } = useAuthStore();
 
   useEffect(() => {
-    // Force session persistence to ensure clean identity isolation
-    setPersistence(auth, browserSessionPersistence);
+    let isMounted = true;
+
+    // Set session persistence once, properly awaited
+    const initAuth = async () => {
+      try {
+        await setPersistence(auth, browserSessionPersistence);
+      } catch (e) {
+        console.warn('Persistence already set or error:', e);
+      }
+    };
+
+    initAuth();
 
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setStoreUser(currentUser);
-      setLoading(false);
+      if (isMounted) {
+        setUser(currentUser);
+        setStoreUser(currentUser);
+        setLoading(false);
+      }
     });
 
-    return () => unsubscribe();
-  }, [setStoreUser]);
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
+  }, []);
 
   const loginWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
