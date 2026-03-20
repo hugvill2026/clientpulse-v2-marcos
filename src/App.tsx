@@ -28,7 +28,9 @@ const PageLoader = () => (
 import { useAuthStore } from './store/authStore'
 
 function App() {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const { isAuthenticated, loading } = useAuthStore()
+
+  if (loading) return <PageLoader />
 
   return (
     <Suspense fallback={<PageLoader />}>
