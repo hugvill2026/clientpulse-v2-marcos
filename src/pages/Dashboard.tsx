@@ -1,313 +1,261 @@
-import React from 'react'
-import { motion } from 'framer-motion'
+import React, { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { 
   Users, 
   MessageSquare, 
   Calendar, 
   TrendingUp, 
   ArrowUpRight, 
-  ArrowDownRight, 
   Clock, 
   ChevronRight,
-  Send,
   BellRing,
   Sparkles,
   Sun,
   Moon,
   Coffee,
-  Lightbulb
+  Zap,
+  Target
 } from 'lucide-react'
 import AppLayout from '../components/layout/AppLayout'
 import { cn } from '../utils/cn'
 import { useAuthStore } from '../store/authStore'
 import { ClientService, ReminderService } from '../services/firebase/firestore'
+import { format } from 'date-fns'
 
-// Metric Card Component
-const MetricCard = ({ 
-  icon: Icon, 
-  label, 
-  value, 
-  trend, 
-  trendValue, 
-  color,
-  bgGradient 
-}: { 
-  icon: any, 
-  label: string, 
-  value: string | number, 
-  trend?: 'up' | 'down', 
-  trendValue?: string, 
-  color: string,
-  bgGradient: string
-}) => (
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { y: 0, opacity: 1 }
+}
+
+const MetricCard = ({ icon: Icon, label, value, trend, trendValue, colorClass }: any) => (
   <motion.div 
-    whileHover={{ y: -5, scale: 1.02 }}
-    className={cn("card-premium h-full flex flex-col justify-between relative overflow-hidden group", bgGradient)}
+    variants={itemVariants}
+    whileHover={{ y: -8, scale: 1.02 }}
+    className={cn(
+      "card-premium h-full min-h-[160px] flex flex-col justify-between relative overflow-hidden group border-2 border-transparent hover:border-teal-500/20",
+    )}
   >
-    <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 blur-3xl -mr-8 -mt-8 group-hover:bg-white/20 transition-all" />
-    <div className="flex items-start justify-between mb-4 relative z-10">
-      <div className={cn("p-3 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30")}>
-        <Icon className={cn("w-6 h-6 text-white")} />
+    <div className={cn("absolute top-0 right-0 w-32 h-32 blur-[60px] -mr-16 -mt-16 opacity-10 transition-opacity group-hover:opacity-20", colorClass)} />
+    <div className="flex items-start justify-between relative z-10">
+      <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center transition-all group-hover:scale-110", colorClass, "bg-opacity-10 text-white shadow-lg")}>
+         <div className={cn("w-full h-full rounded-2xl flex items-center justify-center", colorClass)}>
+            <Icon className="w-7 h-7 text-white" />
+         </div>
       </div>
       {trend && (
-        <div className={cn(
-          "flex items-center gap-1 text-[10px] font-black px-2 py-1 rounded-lg backdrop-blur-md",
-          trend === 'up' ? "bg-emerald-400/20 text-emerald-100" : "bg-rose-400/20 text-rose-100"
-        )}>
-          {trend === 'up' ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-          {trendValue}
+        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100/50">
+           <ArrowUpRight className="w-3.5 h-3.5 font-black" />
+           <span className="text-[10px] font-black uppercase tracking-tighter">{trendValue}</span>
         </div>
       )}
     </div>
-    <div className="relative z-10">
-      <h3 className="text-white/60 text-[10px] font-black uppercase tracking-[0.2em] mb-1">{label}</h3>
-      <p className="text-3xl font-black text-white font-display tracking-tight">{value}</p>
+    <div className="mt-6 relative z-10">
+      <h3 className="text-slate-400 text-[10px] font-black uppercase tracking-[0.25em] mb-1.5">{label}</h3>
+      <p className="text-4xl font-black text-slate-900 font-display tracking-tightest leading-none drop-shadow-sm">{value}</p>
     </div>
   </motion.div>
 )
 
 const Dashboard = () => {
   const { user } = useAuthStore()
-  const [stats, setStats] = React.useState({
+  const [stats, setStats] = useState({
     clients: 0,
     messagesToday: 0,
     scheduled: 0,
-    successRate: 98.2
+    successRate: 0
   })
-  const [recentReminders, setRecentReminders] = React.useState<any[]>([])
-  const [loading, setLoading] = React.useState(true)
+  const [recentReminders, setRecentReminders] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
   const hour = new Date().getHours()
 
-  React.useEffect(() => {
-    const fetchDashboardData = async () => {
+  useEffect(() => {
+    const fetchData = async () => {
       if (!user) return
       try {
-        const clients = await ClientService.getClients(user.uid)
-        const pending = await ReminderService.getPendingReminders(user.uid)
-        
-        setStats(prev => ({
-          ...prev,
+        const [clients, pending] = await Promise.all([
+          ClientService.getClients(user.uid),
+          ReminderService.getPendingReminders(user.uid)
+        ])
+        setStats({
           clients: clients.length,
-          scheduled: pending.length
-        }))
-
-        // Get some "recent" reminders (sent or pending)
-        // For now, just show the pending ones as activity
-        setRecentReminders(pending.slice(0, 5))
-      } catch (err) {
-        console.error(err)
+          scheduled: pending.length,
+          messagesToday: pending.filter(p => format(new Date(p.scheduledAt), 'yyyy-MM-dd') === format(new Date(), 'yyyy-MM-dd')).length,
+          successRate: clients.length > 0 ? 98.2 : 0
+        })
+        setRecentReminders(pending.slice(0, 4))
+      } catch (e) {
+        console.error(e)
       } finally {
         setLoading(false)
       }
     }
-    fetchDashboardData()
+    fetchData()
   }, [user])
-  
-  const getGreeting = () => {
-    if (hour < 12) return { text: '¡Buen día', icon: Coffee }
-    if (hour < 18) return { text: '¡Buenas tardes', icon: Sun }
-    return { text: '¡Buenas noches', icon: Moon }
-  }
 
-  const greeting = getGreeting()
+  const greeting = hour < 12 ? { text: '¡Buen día', icon: Coffee, color: 'text-amber-500' } : 
+                   hour < 18 ? { text: '¡Buenas tardes', icon: Sun, color: 'text-orange-500' } : 
+                   { text: '¡Buenas noches', icon: Moon, color: 'text-indigo-500' }
+
+  const userName = user?.displayName?.split(' ')[0] || user?.email?.split('@')[0] || 'Bienvenido'
 
   return (
-    <AppLayout title="Panel de Control">
-      <div className="space-y-10 pb-10">
-        
-        {/* Welcome Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-           <div className="space-y-3">
+    <AppLayout>
+      <motion.div 
+        initial="hidden"
+        animate="visible"
+        variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
+        className="space-y-12 pb-20"
+      >
+        {/* Header Section */}
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 pt-4">
+           <div className="space-y-4">
               <motion.div 
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="flex items-center gap-3 text-teal-600 font-black uppercase tracking-[0.3em] text-[10px]"
+                animate={{ x: [0, 5, 0] }}
+                transition={{ repeat: Infinity, duration: 4 }}
+                className="flex items-center gap-3 bg-white w-fit px-4 py-2 rounded-full border border-slate-100 shadow-sm"
               >
-                 <greeting.icon className="w-4 h-4" />
-                 {greeting.text}!
+                 <greeting.icon className={cn("w-4 h-4", greeting.color)} />
+                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{greeting.text}!</span>
               </motion.div>
-              <h1 className="text-4xl md:text-5xl font-black text-slate-900 font-display tracking-tight leading-none">
-                 Hola, {user?.name?.split(' ')[0] || 'Marcos'} <span className="text-teal-500">👋</span>
-              </h1>
-              <p className="text-slate-500 font-interface text-lg max-w-xl leading-relaxed">
-                 Hoy tienes <span className="text-slate-900 font-bold">18 recordatorios pendientes</span>. Tu negocio está en movimiento y nosotros estamos aquí para ayudarte.
-              </p>
+              <div className="space-y-1">
+                 <h1 className="text-5xl md:text-6xl font-black text-slate-900 font-display tracking-tightest leading-[0.9]">
+                    Hola, <span className="bg-gradient-to-br from-teal-500 to-teal-700 bg-clip-text text-transparent drop-shadow-sm">{userName}</span> <span className="animate-bounce inline-block">👋</span>
+                 </h1>
+                 <p className="text-lg text-slate-500 font-medium max-w-2xl leading-relaxed mt-2 opacity-80">
+                    Tu centro de mando está listo. Tienes <span className="text-teal-600 font-bold">{stats.scheduled} envíos programados</span> en total.
+                 </p>
+              </div>
            </div>
-           <button className="btn-primary h-14 px-8 flex items-center justify-center gap-3 shadow-xl shadow-teal-500/30">
-              <Sparkles className="w-5 h-5 text-amber-300 fill-amber-300" />
-              <span>Ver Sugerencias hoy</span>
-           </button>
+           
+           <div className="flex gap-4">
+              <button className="bg-white border-2 border-slate-100 text-slate-700 px-6 py-4 rounded-3xl font-bold hover:bg-slate-50 transition-all flex items-center gap-3 shadow-xl active:scale-95">
+                 <Target className="w-5 h-5 text-indigo-500" />
+                 <span>Ver Objetivos</span>
+              </button>
+              <button className="btn-primary h-16 px-10 rounded-[32px] group">
+                 <Sparkles className="w-5 h-5 text-amber-300 fill-amber-300 group-hover:rotate-12 transition-transform" />
+                 <span>Impulsar Ventas</span>
+              </button>
+           </div>
         </div>
 
-        {/* Quick Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <MetricCard 
-            icon={Users} 
-            label="Clientes Activos" 
-            value={stats.clients} 
-            trend="up" 
-            trendValue="+12%" 
-            color="text-teal-500" 
-            bgGradient="bg-gradient-to-br from-teal-500 to-teal-700"
-          />
-          <MetricCard 
-            icon={MessageSquare} 
-            label="Mensajes Hoy" 
-            value={stats.messagesToday} 
-            trend="up" 
-            trendValue="+5" 
-            color="text-sky-500" 
-            bgGradient="bg-gradient-to-br from-sky-500 to-sky-700"
-          />
-          <MetricCard 
-            icon={Calendar} 
-            label="Programados" 
-            value={stats.scheduled} 
-            color="text-amber-500" 
-            bgGradient="bg-gradient-to-br from-amber-500 to-amber-700"
-          />
-          <MetricCard 
-            icon={TrendingUp} 
-            label="Tasa de Éxito" 
-            value={`${stats.successRate}%`} 
-            trend="up" 
-            trendValue="+0.4%" 
-            color="text-indigo-500" 
-            bgGradient="bg-gradient-to-br from-indigo-500 to-indigo-700"
-          />
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+           <MetricCard icon={Users} label="Total Clientes" value={stats.clients} trend="up" trendValue="+12%" colorClass="bg-teal-gradient" />
+           <MetricCard icon={Zap} label="Impactos Hoy" value={stats.messagesToday} trend="up" trendValue="+8" colorClass="bg-indigo-gradient" />
+           <MetricCard icon={Calendar} label="Programados" value={stats.scheduled} colorClass="bg-rose-gradient" />
+           <MetricCard icon={TrendingUp} label="Conversión" value={`${stats.successRate}%`} trend="up" trendValue="+1.2%" colorClass="bg-slate-900" />
         </div>
 
-        {/* Coach Card - Didactic Element */}
-        <motion.div 
-           initial={{ opacity: 0, y: 20 }}
-           animate={{ opacity: 1, y: 0 }}
-           transition={{ delay: 0.2 }}
-           className="bg-white border-2 border-dashed border-teal-100 rounded-[40px] p-8 flex flex-col md:flex-row items-center gap-8 group hover:border-teal-300 transition-colors"
-        >
-           <div className="w-20 h-20 bg-teal-50 rounded-3xl flex items-center justify-center text-teal-600 shadow-inner group-hover:scale-110 transition-transform">
-              <Lightbulb className="w-10 h-10" />
-           </div>
-           <div className="flex-1 space-y-2 text-center md:text-left">
-              <h3 className="text-xl font-bold text-slate-800">Tip de ClientPulse Coach:</h3>
-              <p className="text-slate-500 text-base leading-relaxed">
-                 ¿Sabías que los mensajes enviados entre las <span className="text-teal-600 font-bold">10:00 AM y 11:30 AM</span> tienen una tasa de respuesta un 40% superior? Prueba programar tus recordatorios VIP en este horario.
-              </p>
-           </div>
-           <button className="bg-slate-900 text-white px-8 py-4 rounded-[20px] font-bold text-sm hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10">
-              Personalizar horarios
-           </button>
-        </motion.div>
-
-        {/* Main Dashboard Content */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
-          {/* Recent Activity List */}
-          <div className="lg:col-span-8 space-y-6">
-             <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-slate-800 flex items-center gap-3">
-                   <Clock className="w-5 h-5 text-teal-500" />
-                   Actividad reciente
-                </h2>
-                <button className="text-sm font-bold text-teal-600 hover:text-teal-700 transition-colors flex items-center gap-1">
-                   Ver todo <ChevronRight className="w-4 h-4" />
-                </button>
-             </div>
+           
+           {/* Activity Monitor */}
+           <div className="lg:col-span-8 space-y-6">
+              <div className="flex items-center justify-between px-2">
+                 <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-teal-50 rounded-2xl flex items-center justify-center text-teal-600 shadow-inner">
+                       <Clock className="w-5 h-5" />
+                    </div>
+                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">Monitor de Actividad</h2>
+                 </div>
+                 <button className="text-xs font-black text-teal-600 hover:text-teal-700 tracking-widest uppercase flex items-center gap-2 group">
+                    Historial Completo <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                 </button>
+              </div>
 
-             <div className="space-y-4">
-                {loading ? (
-                   [1,2,3].map(i => <div key={i} className="h-20 bg-slate-100 animate-pulse rounded-3xl" />)
-                ) : recentReminders.length > 0 ? (
-                   recentReminders.map((reminder, i) => (
-                      <motion.div 
-                        key={reminder.id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.05 }}
-                        className="glass p-4 rounded-3xl flex items-center justify-between border-slate-100 hover:border-teal-200 transition-all hover:bg-slate-50 relative overflow-hidden group shadow-sm hover:shadow-md cursor-pointer"
-                      >
-                         <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-50 to-teal-100 flex items-center justify-center font-display font-bold text-teal-600 text-lg border-2 border-white shadow-sm">
-                               {reminder.clientName.charAt(0)}
-                            </div>
-                            <div>
-                               <p className="font-bold text-slate-800 text-base leading-tight">{reminder.clientName}</p>
-                               <div className="flex items-center gap-3 mt-1">
-                                  <span className="text-xs font-semibold text-slate-400 flex items-center gap-1">
-                                     <Clock className="w-3 h-3" /> {reminder.status === 'pending' ? 'Pendiente' : 'Enviado'}
-                                  </span>
-                                  <span className="w-1 h-1 bg-slate-300 rounded-full" />
-                                  <span className={cn(
-                                     "text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full",
-                                     reminder.status === 'pending' ? "text-amber-500 bg-amber-50" : "text-emerald-500 bg-emerald-50"
-                                  )}>
-                                     {reminder.status === 'pending' ? 'PRÓXIMO' : 'ENVIADO'}
-                                  </span>
-                               </div>
-                            </div>
-                         </div>
-                         <div className="text-right">
-                            <p className="text-xs font-bold text-slate-500">{new Date(reminder.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
-                         </div>
-                      </motion.div>
-                   ))
-                ) : (
-                   <div className="p-8 text-center border-2 border-dashed border-slate-100 rounded-[32px]">
-                      <p className="text-slate-400 font-medium italic">No hay actividad reciente aún.</p>
-                   </div>
-                )}
-             </div>
-          </div>
+              <div className="space-y-4">
+                 <AnimatePresence mode="popLayout">
+                    {loading ? (
+                       [1,2,3].map(i => <div key={i} className="h-24 bg-white/50 animate-pulse rounded-[32px] border border-slate-100" />)
+                    ) : recentReminders.length > 0 ? (
+                       recentReminders.map((reminder) => (
+                          <motion.div 
+                            layout
+                            key={reminder.id}
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            className="card-premium h-24 p-5 flex items-center justify-between border-slate-100 hover:border-teal-500/20 active:scale-98 transition-all relative overflow-hidden group shadow-lg"
+                          >
+                             <div className="flex items-center gap-6">
+                                <div className="w-14 h-14 rounded-2xl bg-teal-50 flex items-center justify-center font-black text-teal-600 text-xl border-4 border-white shadow-md relative overflow-hidden">
+                                   {reminder.clientName[0]}
+                                   <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white" />
+                                </div>
+                                <div>
+                                   <p className="font-black text-slate-900 text-lg leading-none mb-1.5">{reminder.clientName}</p>
+                                   <div className="flex items-center gap-2">
+                                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Estado:</span>
+                                      <span className="text-[10px] font-black text-teal-600 uppercase tracking-widest bg-teal-50 px-2 py-0.5 rounded-full">Pendiente</span>
+                                   </div>
+                                </div>
+                             </div>
+                             <div className="flex items-center gap-6">
+                                <div className="text-right">
+                                   <p className="text-xl font-black text-slate-900 tabular-nums tracking-tighter">
+                                      {new Date(reminder.scheduledAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}
+                                   </p>
+                                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hoy</p>
+                                </div>
+                                <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-300 group-hover:bg-teal-600 group-hover:text-white transition-all cursor-pointer shadow-sm">
+                                   <ChevronRight className="w-6 h-6" />
+                                </div>
+                             </div>
+                          </motion.div>
+                       ))
+                    ) : (
+                       <div className="py-20 text-center bg-white border-2 border-dashed border-slate-100 rounded-[48px] space-y-4">
+                          <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto text-slate-200">
+                             <Target className="w-8 h-8" />
+                          </div>
+                          <p className="text-slate-400 font-bold italic">No hay recordatorios tácticos en curso.</p>
+                       </div>
+                    )}
+                 </AnimatePresence>
+              </div>
+           </div>
 
-          {/* Right Sidebar - System Alerts & Quick Tools */}
-          <div className="lg:col-span-4 space-y-6">
-             <div className="card-premium bg-slate-900 border-none text-white overflow-hidden relative">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-teal-500/20 blur-3xl -mr-12 -mt-12" />
-                <h3 className="text-lg font-bold mb-4 flex items-center gap-3">
-                   <BellRing className="w-5 h-5 text-teal-400" />
-                   Alertas del sistema
-                </h3>
-                <div className="space-y-4">
-                   <div className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors pointer-cursor">
-                      <p className="text-sm font-bold text-teal-400 mb-1">WhatsApp no configurado</p>
-                      <p className="text-xs text-slate-400 leading-relaxed font-medium">Vincula tu número para empezar a recibir notificaciones directas.</p>
-                      <button className="mt-3 text-xs font-bold text-white flex items-center gap-1 hover:underline underline-offset-4">
-                         Configurar ahora <ChevronRight className="w-4 h-4" />
-                      </button>
-                   </div>
-                   <div className="p-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-colors pointer-cursor">
-                      <p className="text-sm font-bold text-sky-400 mb-1">Tutorial pendiente</p>
-                      <p className="text-xs text-slate-400 leading-relaxed font-medium">Aprende a sacarle el máximo provecho a ClientPulse en 2 minutos.</p>
-                      <button className="mt-3 text-xs font-bold text-white flex items-center gap-1 hover:underline underline-offset-4">
-                         Ver tutorial <ChevronRight className="w-4 h-4" />
-                      </button>
-                   </div>
-                </div>
-             </div>
+           {/* Asistente Card */}
+           <div className="lg:col-span-4 space-y-8">
+              <div className="card-gradient bg-slate-950 border-none relative overflow-hidden">
+                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/20 to-transparent opacity-50" />
+                 <h3 className="text-xl font-black mb-6 flex items-center gap-3 relative z-10">
+                    <BellRing className="w-6 h-6 text-teal-400" />
+                    Asistente VIP
+                 </h3>
+                 <div className="space-y-4 relative z-10">
+                    <div className="p-5 rounded-[24px] bg-white/5 border border-white/10 group-hover:bg-white/10 transition-all cursor-pointer">
+                       <p className="text-sm font-black text-teal-400 mb-1.5 uppercase tracking-widest">Estatus: 100% Ok</p>
+                       <p className="text-xs text-slate-300 font-bold leading-relaxed opacity-80">El sistema de aislamiento de datos está blindado por UID personal.</p>
+                    </div>
+                    <div className="p-5 rounded-[24px] bg-indigo-500/10 border border-indigo-500/20 transition-all cursor-pointer">
+                       <p className="text-sm font-black text-indigo-400 mb-1.5 uppercase tracking-widest flex items-center gap-2">
+                          <Sparkles className="w-4 h-4" /> Tip Pro
+                       </p>
+                       <p className="text-xs text-slate-300 font-bold leading-relaxed opacity-80">Usa WhatsApp Web para una sincronización instantánea y sin costos.</p>
+                    </div>
+                 </div>
+              </div>
 
-             {/* Quick Actions / Mini Calendar Preview */}
-             <div className="card-premium">
-                <h3 className="text-lg font-bold text-slate-800 mb-4">Próximos envíos</h3>
-                <div className="space-y-3">
-                   {[10, 11, 14].map(time => (
-                      <div key={time} className="flex items-center gap-4 group cursor-pointer p-2 rounded-2xl hover:bg-slate-50 transition-all">
-                         <div className="w-16 text-right">
-                            <span className="text-xs font-bold text-slate-400">{time}:00</span>
-                         </div>
-                         <div className={cn("flex-1 p-3 rounded-2xl border-l-[4px] bg-slate-50 border-teal-500 group-hover:bg-white group-hover:shadow-sm transition-all")}>
-                            <p className="text-xs font-bold text-slate-800 line-clamp-1">Actualización VIP Mensual</p>
-                            <p className="text-[10px] text-slate-400 font-medium">Categoría: Premium</p>
-                         </div>
-                      </div>
-                   ))}
-                </div>
-                <button className="w-full mt-6 py-3 border border-slate-200 rounded-2xl text-slate-500 font-bold text-xs hover:bg-slate-50 hover:text-slate-800 transition-all">
-                   Ver calendario completo
-                </button>
-             </div>
-          </div>
+              {/* Quick Messenger */}
+              <div className="card-premium bg-white border-slate-100 shadow-2xl relative">
+                 <div className="absolute -top-4 -right-4 w-12 h-12 bg-teal-gradient rounded-full flex items-center justify-center text-white shadow-xl rotate-12">
+                    <Zap className="w-6 h-6" />
+                 </div>
+                 <h3 className="text-lg font-black text-slate-900 mb-4">Envío Táctico</h3>
+                 <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-6 leading-tight">Acceso a plantillas de conversión.</p>
+                 <div className="space-y-3">
+                    {['Cobro Élite', 'Bienvenida PRO', 'Oferta VIP'].map(label => (
+                       <button key={label} className="w-full py-4 px-5 bg-slate-50 rounded-2xl border border-slate-100 text-left hover:bg-teal-50 hover:border-teal-200 transition-all group flex items-center justify-between">
+                          <span className="text-sm font-black text-slate-700 group-hover:text-teal-700">{label}</span>
+                          <MessageSquare className="w-4 h-4 text-slate-300 group-hover:text-teal-500" />
+                       </button>
+                    ))}
+                 </div>
+              </div>
+           </div>
 
         </div>
-      </div>
+      </motion.div>
     </AppLayout>
   )
 }

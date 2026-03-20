@@ -1,189 +1,303 @@
-import React, { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import AppLayout from '../components/layout/AppLayout'
+import { cn } from '../utils/cn'
+import { useAuthStore } from '../store/authStore'
+import { ReminderService, ClientService, UserService, type ReminderData, type ClientData } from '../services/firebase/firestore'
+import { GoogleSheetsService } from '../services/googleSheets.service'
+import MessageModal from '../components/messages/MessageModal'
+import { useState, useEffect } from 'react'
+import toast from 'react-hot-toast'
 import { 
   MessageSquare, 
-  Send, 
   Clock, 
   Plus, 
   Trash, 
-  Edit, 
-  MoreVertical, 
-  Image as ImageIcon, 
-  Video, 
-  FileText, 
-  ChevronRight,
-  Filter,
-  CheckCircle2,
-  Calendar,
-  AlertCircle
+  Zap,
+  Smartphone,
+  Mail,
+  Send as Telegram,
+  TrendingUp,
+  Sparkles,
+  Edit2
 } from 'lucide-react'
-import AppLayout from '../components/layout/AppLayout'
-import { cn } from '../utils/cn'
+import { AnimatePresence, motion } from 'framer-motion'
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
 
-// Mock Templates
-const mockMessages = [
-  { id: '1', name: 'Recordatorio Mensual VIP', text: 'Hola {{nombre_cliente}}, un gusto saludarte de parte de {{empresa}}...', type: 'recurring', status: 'active', lastSent: '2024-03-15', nextSend: '2024-04-15', attachment: 'none' },
-  { id: '2', name: 'Alerta de Pago Vencido', text: 'Estimado {{nombre_cliente}}, te recordamos que tu factura con referencia {{referencia}}...', type: 'manual', status: 'paused', lastSent: '2024-02-10', nextSend: '-', attachment: 'document' },
-  { id: '3', name: 'Bienvenida Nuevos Clientes', text: '¡Bienvenido a la familia! Estamos felices de tenerte con nosotros...', type: 'once', status: 'completed', lastSent: '2024-03-01', nextSend: '-', attachment: 'image' },
-]
+const MessageCard = ({ msg, onDelete, onEdit }: { msg: ReminderData, onDelete: (id: string) => void, onEdit: (msg: ReminderData) => void }) => {
+  const isSent = msg.status === 'sent'
 
-const MessageCard = ({ msg }: { msg: typeof mockMessages[0] }) => {
-  const isRecurring = msg.type === 'recurring'
-  const isActive = msg.status === 'active'
+  const handleLaunchChannel = (channel: 'whatsapp' | 'telegram' | 'email') => {
+    const finalMessage = msg.messageText.replace(/{{nombre}}/gi, msg.clientName)
+    const cleanPhone = msg.clientWhatsapp.replace(/\D/g, '')
+
+    if (channel === 'whatsapp') {
+       const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(finalMessage)}`
+       window.open(url, '_blank')
+       toast.success('Lanzando WhatsApp...', { icon: '🚀' })
+    } else if (channel === 'telegram') {
+       const url = `https://t.me/share/url?url=&text=${encodeURIComponent(finalMessage)}`
+       window.open(url, '_blank')
+       toast.success('Lanzando Telegram...', { icon: '✈️' })
+    } else if (channel === 'email') {
+       const url = `mailto:?subject=Contacto de ClientPulse&body=${encodeURIComponent(finalMessage)}`
+       window.open(url, '_blank')
+       toast.success('Preparando Email...', { icon: '📧' })
+    }
+
+    ReminderService.updateReminderStatus(msg.id!, 'sent')
+  }
 
   return (
     <motion.div 
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="card-premium h-full flex flex-col justify-between group border-l-[6px]"
-      style={{ borderLeftColor: isActive ? '#0D9488' : msg.status === 'paused' ? '#F59E0B' : '#94A3B8' }}
+      layout
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className={cn(
+        "card-premium h-full min-h-[480px] flex flex-col justify-between group border-2 border-slate-100 hover:border-teal-500/30 transition-all shadow-xl relative overflow-hidden bg-white/50 backdrop-blur-sm",
+        isSent ? "opacity-80 grayscale-[0.2]" : "opacity-100"
+      )}
     >
-      <div className="flex justify-between items-start mb-4">
-        <div className="flex gap-3">
-          <div className={cn("p-2.5 rounded-2xl bg-opacity-10", isActive ? "bg-teal-500 text-teal-600" : "bg-slate-500 text-slate-600")}>
-            <MessageSquare className="w-5 h-5" />
+      <div className={cn("absolute top-0 right-0 w-32 h-32 blur-[60px] -mr-16 -mt-16 opacity-10", isSent ? "bg-slate-500" : "bg-teal-500")} />
+      
+      <div className="flex justify-between items-start mb-6">
+        <div className="flex gap-4">
+          <div className={cn(
+             "w-16 h-16 rounded-[24px] flex items-center justify-center font-black text-2xl border-4 border-white shadow-xl bg-teal-gradient text-white"
+          )}>
+            {msg.clientName[0]}
           </div>
-          <div>
-            <h3 className="font-bold text-slate-800 line-clamp-1 group-hover:text-teal-600 transition-colors uppercase text-xs tracking-wider">{msg.name}</h3>
-            <div className="flex items-center gap-2 mt-1">
-              <span className={cn(
-                "text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter",
-                msg.type === 'recurring' ? "bg-indigo-50 text-indigo-600" : "bg-sky-50 text-sky-600"
-              )}>
-                {msg.type}
-              </span>
-              <span className="w-1 h-1 bg-slate-300 rounded-full" />
-              <span className="text-[10px] font-bold text-slate-400">Creado hace 2 meses</span>
+          <div className="pt-1">
+            <h3 className="text-lg font-black text-slate-900 leading-tight mb-1 line-clamp-1">{msg.clientName}</h3>
+            <div className="flex items-center gap-2">
+               <span className="text-[10px] font-black text-slate-400 tracking-[0.15em] uppercase">
+                  {msg.scheduledAt instanceof Date ? format(msg.scheduledAt, 'MMM d, p', { locale: es }) : 'Programado'}
+               </span>
+               <div className={cn("w-1.5 h-1.5 rounded-full", isSent ? "bg-slate-400" : "bg-teal-500 animate-pulse")} />
             </div>
           </div>
         </div>
-        <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition-all">
-          <MoreVertical className="w-5 h-5" />
-        </button>
-      </div>
-
-      <div className="flex-1 my-4">
-        <div className="bg-slate-50 p-4 rounded-2xl relative overflow-hidden h-32 flex flex-col justify-between">
-           <p className="text-xs text-slate-500 line-clamp-4 leading-relaxed font-interface italic">
-              "{msg.text}"
-           </p>
-           {msg.attachment !== 'none' && (
-              <div className="flex items-center gap-2 mt-3 px-3 py-2 bg-white/60 backdrop-blur-sm rounded-xl border border-white/50 w-fit">
-                 {msg.attachment === 'image' ? <ImageIcon className="w-3.5 h-3.5 text-teal-500" /> : <FileText className="w-3.5 h-3.5 text-sky-500" />}
-                 <span className="text-[10px] font-bold text-slate-500">Adjunto: {msg.attachment}</span>
-              </div>
-           )}
+        <div className="flex gap-1">
+           <button onClick={() => onEdit(msg)} className="p-3 text-slate-300 hover:text-teal-500 hover:bg-teal-50 rounded-xl transition-all"><Edit2 className="w-5 h-5" /></button>
+           <button onClick={() => onDelete(msg.id!)} className="p-3 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all"><Trash className="w-5 h-5" /></button>
         </div>
       </div>
 
-      <div className="space-y-3 pt-4 border-t border-slate-50">
-        <div className="flex items-center justify-between text-xs font-bold">
-           <span className="text-slate-400 flex items-center gap-2"><Clock className="w-3.5 h-3.5" /> Última vez:</span>
-           <span className="text-slate-600">{msg.lastSent}</span>
-        </div>
-        <div className="flex items-center justify-between text-xs font-bold">
-           <span className="text-slate-400 flex items-center gap-2"><Calendar className="w-3.5 h-3.5" /> Siguiente:</span>
-           <span className={cn(isActive ? "text-teal-600" : "text-slate-400")}>{msg.nextSend}</span>
-        </div>
+      <div className="flex-1 my-6 relative overflow-hidden p-8 bg-slate-50/80 rounded-[40px] border border-slate-100/50 shadow-inner group-hover:bg-white transition-all min-h-[160px] flex items-center justify-center">
+         <Sparkles className="absolute -top-4 -right-4 w-12 h-12 text-teal-500/5 rotate-12" />
+         <p className="text-base text-slate-600 font-interface leading-relaxed italic text-center w-full font-medium">
+            "{msg.messageText.replace('{{nombre}}', msg.clientName)}"
+          </p>
       </div>
 
-      <div className="mt-6 flex items-center gap-2">
-         <button className="flex-1 btn-primary h-11 text-xs py-0 flex items-center justify-center gap-2">
-            <Send className="w-4 h-4" /> Enviar ahora
-         </button>
-         <button className="p-3 bg-slate-50 text-slate-600 border border-slate-200 rounded-2xl hover:bg-slate-100 transition-all active:scale-95">
-            <Edit className="w-4 h-4" />
-         </button>
+      <div className="space-y-5 pt-8 border-t border-slate-50 relative z-10">
+        <div className="flex items-center justify-between">
+           <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center"><Clock className="w-4 h-4" /></div>
+              <span className="text-[10px] font-black tracking-widest uppercase text-slate-400">Canal de Impacto</span>
+           </div>
+           <span className={cn(
+             "px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase",
+             isSent ? "bg-slate-100 text-slate-500" : "bg-teal-100 text-teal-700 pulse-teal shadow-lg shadow-teal-500/10"
+           )}>
+             {isSent ? 'Despachado' : 'Pendiente'}
+           </span>
+        </div>
+        
+        <div className="grid grid-cols-4 gap-3">
+           <button 
+             onClick={() => handleLaunchChannel('whatsapp')}
+             className="col-span-2 h-16 bg-emerald-gradient text-white rounded-2xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-3 shadow-xl hover:scale-105 transition-all group"
+           >
+              <Smartphone className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+              WhatsApp
+           </button>
+           <button 
+             onClick={() => handleLaunchChannel('telegram')}
+             className="h-16 bg-sky-500 text-white rounded-2xl flex items-center justify-center hover:scale-105 transition-all shadow-xl group"
+           >
+              <Telegram className="w-5 h-5 group-hover:-translate-y-1 transition-transform" />
+           </button>
+           <button 
+             onClick={() => handleLaunchChannel('email')}
+             className="h-16 bg-slate-900 text-white rounded-2xl flex items-center justify-center hover:scale-105 transition-all shadow-xl group"
+           >
+              <Mail className="w-5 h-5 group-hover:scale-110 transition-transform" />
+           </button>
+        </div>
       </div>
     </motion.div>
   )
 }
 
 const Messages = () => {
+  const { user } = useAuthStore()
+  const [reminders, setReminders] = useState<ReminderData[]>([])
+  const [clients, setClients] = useState<ClientData[]>([])
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingMsg, setEditingMsg] = useState<ReminderData | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [filter, setFilter] = useState<'all' | 'pending' | 'sent'>('all')
+
+  const fetchData = async () => {
+    if (!user) return
+    try {
+      const [remData, cliData] = await Promise.all([
+        ReminderService.getPendingReminders(user.uid),
+        ClientService.getClients(user.uid)
+      ])
+      setReminders(remData)
+      setClients(cliData)
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchData()
+  }, [user])
+
+  const handleCreateOrUpdateReminder = async (formData: any) => {
+    if (!user) return
+    setSaving(true)
+    const toastId = toast.loading(editingMsg ? 'Actualizando despacho...' : 'Calculando ruta táctica...')
+    try {
+      const client = clients.find(c => c.id === formData.clientId)
+      if (!client) throw new Error('Cliente no identificado')
+
+      const payload = {
+        ...formData,
+        userId: user.uid,
+        clientName: client.name,
+        clientWhatsapp: client.whatsapp,
+        messageText: formData.text,
+        scheduledAt: new Date(formData.scheduledAt)
+      }
+
+      if (editingMsg) {
+        await ReminderService.updateReminder(editingMsg.id!, payload)
+        toast.success('Envío actualizado institucionalmente 🏛️', { id: toastId })
+      } else {
+        await ReminderService.createReminder(payload)
+        const profile = await UserService.getUserProfile(user.uid)
+        await GoogleSheetsService.sync(profile?.googleSheetsUrl, 'REMINDER', {
+           userId: user.uid,
+           clientName: client.name,
+           text: formData.text,
+           scheduledAt: formData.scheduledAt
+        })
+        toast.success('Programación en la nube activa ☁️', { id: toastId })
+      }
+      
+      fetchData()
+      setIsModalOpen(false)
+      setEditingMsg(null)
+    } catch (e) {
+      toast.error('Fallo técnico al programar.', { id: toastId })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDeleteReminder = async (id: string) => {
+    if (!window.confirm('¿Abortar este envío?')) return
+    try {
+      await ReminderService.deleteReminder(id)
+      toast.success('Operación eliminada')
+      fetchData()
+    } catch (e) {
+      toast.error('Error al limpiar')
+    }
+  }
+
+  const filteredReminders = reminders.filter(r => filter === 'all' || r.status === filter)
+
   return (
-    <AppLayout title="Gestión de Mensajes">
-      <div className="space-y-8">
+    <AppLayout>
+      <div className="space-y-12 pb-20">
         
-        {/* Header Tools */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-           <div className="flex bg-white border border-slate-200 rounded-2xl p-1 shadow-sm w-fit">
-              <button className="px-5 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-lg shadow-slate-900/10 transition-all">Todos</button>
-              <button className="px-5 py-2 rounded-xl text-slate-400 hover:text-slate-600 transition-all text-xs font-bold">Automáticos</button>
-              <button className="px-5 py-2 rounded-xl text-slate-400 hover:text-slate-600 transition-all text-xs font-bold">Manuales</button>
-              <button className="px-5 py-2 rounded-xl text-slate-400 hover:text-slate-600 transition-all text-xs font-bold">Borradores</button>
+        {/* Institutional Toolbar */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 pt-4">
+           <div className="flex-1 space-y-4">
+              <div className="flex items-center gap-3 bg-white w-fit px-4 py-2 rounded-full border border-slate-100 shadow-sm">
+                 <Zap className="w-4 h-4 text-teal-600" />
+                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Despacho Táctico Maestro</span>
+              </div>
+              <h1 className="text-5xl font-black text-slate-900 font-display tracking-tightest leading-none">
+                 Centro de <span className="bg-gradient-to-br from-indigo-500 to-indigo-700 bg-clip-text text-transparent italic">Mensajes</span>
+              </h1>
            </div>
            
-           <button className="btn-primary h-12 flex items-center justify-center gap-2 group px-6">
-              <Plus className="w-4 h-4 transition-transform group-hover:rotate-90" />
-              <span>Crear Nuevo Mensaje</span>
-           </button>
-        </div>
-
-        {/* Messaging Stats Banner */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-           <div className="card-premium bg-gradient-to-br from-teal-500 to-teal-700 text-white border-none relative overflow-hidden h-32">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 blur-2xl -mr-16 -mt-16" />
-              <div className="relative z-10 flex flex-col justify-between h-full">
-                 <p className="text-xs font-bold uppercase tracking-widest opacity-80">Total Enviados</p>
-                 <div className="flex items-end gap-3">
-                    <p className="text-4xl font-bold font-display leading-none">12.5k</p>
-                    <span className="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-full">+4.2%</span>
-                 </div>
+           <div className="flex flex-col sm:flex-row items-center gap-6">
+              <div className="flex bg-white border-2 border-slate-100 rounded-[28px] p-2 shadow-xl h-20 items-center px-4">
+                 {[
+                   { id: 'all', label: 'Historial', color: 'bg-slate-900' },
+                   { id: 'pending', label: 'En Cola', color: 'bg-teal-600' },
+                   { id: 'sent', label: 'Efectivos', color: 'bg-emerald-600' }
+                 ].map(f => (
+                    <button 
+                      key={f.id}
+                      onClick={() => setFilter(f.id as any)}
+                      className={cn(
+                        "px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all h-12 flex items-center justify-center",
+                        filter === f.id ? cn(f.color, "text-white") : "text-slate-400 hover:text-slate-600"
+                      )}
+                    >{f.label}</button>
+                 ))}
               </div>
-           </div>
-           <div className="card-premium border-slate-200 shadow-none h-32">
-              <div className="flex flex-col justify-between h-full">
-                 <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Mensajes Activos</p>
-                 <p className="text-4xl font-bold font-display text-slate-800 leading-none">08</p>
-              </div>
-           </div>
-           <div className="card-premium h-32 border-none bg-indigo-50 bg-opacity-50 shadow-none">
-              <div className="flex flex-col justify-between h-full">
-                 <p className="text-xs font-bold uppercase tracking-widest text-indigo-500">Tasa de Entrega</p>
-                 <div className="flex items-center gap-3">
-                    <p className="text-4xl font-bold font-display text-indigo-900 leading-none">99.9%</p>
-                    <CheckCircle2 className="w-6 h-6 text-indigo-500" />
-                 </div>
-              </div>
+              <button 
+                onClick={() => { setEditingMsg(null); setIsModalOpen(true); }}
+                className="btn-primary h-20 px-10 rounded-[32px] group"
+              >
+                 <Plus className="w-6 h-6 group-hover:rotate-90 transition-transform" />
+                 <span>Programar Envío</span>
+              </button>
            </div>
         </div>
 
-        {/* Message Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-10">
-           {mockMessages.map(msg => (
-              <MessageCard key={msg.id} msg={msg} />
+        {/* Dash Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+           {[
+             { label: 'WhatsApp', icon: Smartphone, val: `${filteredReminders.length > 0 ? '99%' : '0%'}`, color: 'text-emerald-500' },
+             { label: 'Telegram', icon: Telegram, val: '84%', color: 'text-sky-500' },
+             { label: 'Email', icon: Mail, val: '72%', color: 'text-slate-800' },
+             { label: 'Impacto', icon: TrendingUp, val: '+24%', color: 'text-white', bg: 'bg-teal-gradient' }
+           ].map(stat => (
+              <div key={stat.label} className={cn("card-premium h-32 flex flex-col justify-between border-slate-100 shadow-xl", stat.bg)}>
+                 <div className={cn("flex items-center gap-3", stat.color || "text-white/60")}>
+                    <stat.icon className="w-4 h-4" />
+                    <span className="text-[10px] font-black uppercase tracking-widest">{stat.label}</span>
+                 </div>
+                 <p className={cn("text-4xl font-black font-display leading-none", stat.bg ? "text-white" : "text-slate-900")}>{stat.val}</p>
+              </div>
            ))}
-           
-           {/* Empty/Add Slot */}
-           <motion.div 
-              whileHover={{ scale: 1.01 }}
-              className="border-2 border-dashed border-slate-200 rounded-3xl flex flex-col items-center justify-center p-8 gap-4 text-center cursor-pointer hover:border-teal-300 hover:bg-teal-50/20 transition-all h-[420px]"
-           >
-              <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-slate-300 group-hover:text-teal-500 transition-colors">
-                 <Plus className="w-8 h-8" />
-              </div>
-              <div>
-                 <p className="font-bold text-slate-800">Crea una plantilla</p>
-                 <p className="text-xs text-slate-400 max-w-[200px] mt-2">Personaliza el mensaje con variables como el nombre del cliente y ahorra tiempo.</p>
-              </div>
-           </motion.div>
         </div>
 
-        {/* Usage Tips / Guidelines */}
-        <div className="bg-amber-50 rounded-3xl p-6 flex gap-4 border border-amber-100">
-           <div className="w-12 h-12 bg-amber-500 rounded-2xl flex flex-shrink-0 items-center justify-center text-white shadow-lg shadow-amber-500/20">
-              <AlertCircle className="w-6 h-6" />
-           </div>
-           <div>
-              <p className="text-sm font-bold text-amber-900 mb-1">Evita bloqueos de WhatsApp</p>
-              <p className="text-xs text-amber-700 leading-relaxed max-w-3xl">
-                 Recuerda no enviar el mismo mensaje exacto a demasiados contactos en un periodo corto. 
-                 Usa nuestras variables <code className="bg-amber-100/50 px-1.5 py-0.5 rounded text-amber-900">{'{{nombre_cliente}}'}</code> para hacer que cada mensaje sea único. 
-                 Mantén tus programaciones automáticas con intervalos razonables.
-              </p>
-           </div>
+        {/* Operations Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-10">
+           <AnimatePresence>
+              {filteredReminders.map(msg => (
+                 <MessageCard key={msg.id} msg={msg} onDelete={handleDeleteReminder} onEdit={(m) => { setEditingMsg(m); setIsModalOpen(true); }} />
+              ))}
+              {!loading && filteredReminders.length === 0 && (
+                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="col-span-full py-40 text-center bg-white border-2 border-dashed border-slate-100 rounded-[32px] text-slate-400 font-bold italic">
+                   Bandeja de lanzamiento despejada.
+                 </motion.div>
+              )}
+           </AnimatePresence>
         </div>
       </div>
+
+      <MessageModal 
+        isOpen={isModalOpen} 
+        onClose={() => { setIsModalOpen(false); setEditingMsg(null); }} 
+        onSubmit={handleCreateOrUpdateReminder} 
+        clients={clients} 
+        initialData={editingMsg || undefined}
+        loading={saving} 
+      />
     </AppLayout>
   )
 }

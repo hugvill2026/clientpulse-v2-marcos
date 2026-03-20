@@ -2,35 +2,53 @@ import {
   collection, 
   doc, 
   addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  getDocs, 
+  setDoc, 
+  updateDoc,
+  deleteDoc,
+  getDocs,
   getDoc,
-  query, 
-  where, 
-  orderBy, 
+  query,
+  where,
+  orderBy,
   Timestamp,
   serverTimestamp
 } from 'firebase/firestore';
 import { db } from '../../config/firebase';
 
 // Collections
+const USERS_COLLECTION = 'users';
 const CLIENTS_COLLECTION = 'clients';
 const REMINDERS_COLLECTION = 'reminders';
 
 // Interfaces
+export interface UserProfileData {
+  fullName: string;
+  phone: string;
+  city: string;
+  companyName: string;
+  website: string;
+  bio: string;
+  email?: string;
+  photoURL?: string;
+  userId: string;
+  updatedAt: any;
+  createdAt?: any;
+  callMeBotPhone?: string;
+  googleSheetsUrl?: string;
+}
+
 export interface ClientData {
   id?: string;
   userId: string;
   name: string;
   whatsapp: string;
   email?: string;
+  company?: string;
   category?: string;
   priority?: string;
-  status: string;
-  company?: string;
+  status: 'activo' | 'inactivo';
   notes?: string;
-  createdAt?: any;
+  createdAt: any;
 }
 
 export interface ReminderData {
@@ -40,78 +58,110 @@ export interface ReminderData {
   clientName: string;
   clientWhatsapp: string;
   messageText: string;
-  imageUrl?: string;
-  scheduledAt: Date | Timestamp | any;
+  scheduledAt: any;
   status: 'pending' | 'sent' | 'failed';
-  createdAt?: any;
+  type: 'once' | 'recurring' | 'manual';
+  createdAt: any;
 }
 
+// User Profile Services
+export const UserService = {
+  async getUserProfile(userId: string): Promise<UserProfileData | null> {
+    const docRef = doc(db, USERS_COLLECTION, userId);
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? docSnap.data() as UserProfileData : null;
+  },
+
+  async updateUserProfile(userId: string, data: Partial<UserProfileData>) {
+    const docRef = doc(db, USERS_COLLECTION, userId);
+    await setDoc(docRef, { 
+      ...data, 
+      updatedAt: serverTimestamp() 
+    }, { merge: true });
+  },
+
+  async deleteUserAccount(userId: string) {
+    const docRef = doc(db, USERS_COLLECTION, userId);
+    await deleteDoc(docRef);
+  }
+};
+
+// Client Services
 export const ClientService = {
-  // Create a new client
-  async createClient(data: Omit<ClientData, 'id'>) {
+  async getClients(userId: string): Promise<ClientData[]> {
+    const q = query(
+      collection(db, CLIENTS_COLLECTION),
+      where('userId', '==', userId),
+      orderBy('createdAt', 'desc')
+    );
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({ 
+      id: doc.id, 
+      ...doc.data() 
+    } as ClientData));
+  },
+
+  async createClient(data: Omit<ClientData, 'id' | 'createdAt'>): Promise<string> {
     const docRef = await addDoc(collection(db, CLIENTS_COLLECTION), {
       ...data,
-      createdAt: serverTimestamp(),
-      status: data.status || 'activo'
+      createdAt: serverTimestamp()
     });
     return docRef.id;
   },
 
-  // Get all clients for a user
-  async getClients(userId: string) {
-    const q = query(
-      collection(db, CLIENTS_COLLECTION), 
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc')
-    );
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ClientData));
-  },
-
-  // Update client
   async updateClient(clientId: string, data: Partial<ClientData>) {
     const docRef = doc(db, CLIENTS_COLLECTION, clientId);
-    await updateDoc(docRef, { ...data });
+    await updateDoc(docRef, data);
   },
 
-  // Delete client
   async deleteClient(clientId: string) {
     const docRef = doc(db, CLIENTS_COLLECTION, clientId);
     await deleteDoc(docRef);
   }
 };
 
+// Reminder Services
 export const ReminderService = {
-  // Create a new reminder
-  async createReminder(data: Omit<ReminderData, 'id' | 'status'>) {
+  async getPendingReminders(userId: string): Promise<ReminderData[]> {
+    const q = query(
+      collection(db, REMINDERS_COLLECTION),
+      where('userId', '==', userId),
+      orderBy('scheduledAt', 'asc')
+    );
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      // Handle Firebase Timestamp conversion
+      const scheduledAt = data.scheduledAt instanceof Timestamp ? data.scheduledAt.toDate() : data.scheduledAt;
+      return { 
+        id: doc.id, 
+        ...data,
+        scheduledAt 
+      } as ReminderData;
+    });
+  },
+
+  async createReminder(data: Omit<ReminderData, 'id' | 'status' | 'createdAt'>) {
     const docRef = await addDoc(collection(db, REMINDERS_COLLECTION), {
       ...data,
-      scheduledAt: Timestamp.fromDate(data.scheduledAt as Date),
       status: 'pending',
       createdAt: serverTimestamp()
     });
     return docRef.id;
   },
 
-  // Get pending reminders for a user
-  async getPendingReminders(userId: string) {
-    const q = query(
-      collection(db, REMINDERS_COLLECTION),
-      where('userId', '==', userId),
-      where('status', '==', 'pending'),
-      orderBy('scheduledAt', 'asc')
-    );
-    const snapshot = await getDocs(q);
-    return snapshot.docs.map(doc => ({ 
-      id: doc.id, 
-      ...doc.data(), 
-      scheduledAt: (doc.data().scheduledAt as Timestamp).toDate()
-    } as ReminderData));
+  async updateReminder(reminderId: string, data: Partial<ReminderData>) {
+    const docRef = doc(db, REMINDERS_COLLECTION, reminderId);
+    await updateDoc(docRef, data);
   },
 
-  // Update reminder status
   async updateReminderStatus(reminderId: string, status: 'sent' | 'failed') {
     const docRef = doc(db, REMINDERS_COLLECTION, reminderId);
     await updateDoc(docRef, { status });
+  },
+
+  async deleteReminder(reminderId: string) {
+    const docRef = doc(db, REMINDERS_COLLECTION, reminderId);
+    await deleteDoc(docRef);
   }
 };

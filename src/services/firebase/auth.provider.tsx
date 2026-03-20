@@ -6,19 +6,25 @@ import {
   signOut, 
   type User, 
   GoogleAuthProvider, 
-  signInWithPopup 
+  signInWithPopup,
+  browserSessionPersistence,
+  setPersistence
 } from 'firebase/auth';
 import { auth } from '../../config/firebase';
 import { useAuthStore } from '../../store/authStore';
+import toast from 'react-hot-toast';
 
 const AuthContext = createContext<any>(null);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const { setUser: setStoreUser } = useAuthStore();
+  const { setUser: setStoreUser, logout: clearStore } = useAuthStore();
 
   useEffect(() => {
+    // Force session persistence to avoid "always Marcos" issues on shared devices
+    setPersistence(auth, browserSessionPersistence);
+
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setStoreUser(currentUser);
@@ -30,10 +36,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const loginWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' }); // Crucial: Always allow account selection
     try {
       return await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error("Google Login Error:", error);
+    } catch (error: any) {
+      if (error.code === 'auth/popup-closed-by-user') {
+         toast.error('Has cerrado la conexión con Google. Inténtalo de nuevo.');
+      }
       throw error;
     }
   };
@@ -46,7 +55,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return await createUserWithEmailAndPassword(auth, email, pass);
   };
 
-  const logout = () => signOut(auth);
+  const logout = async () => {
+    try {
+      await signOut(auth);
+      clearStore();
+      localStorage.clear(); // Total Wipe
+      sessionStorage.clear();
+      window.location.href = '/login'; // Force clean reload
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   const value = {
     user,
@@ -65,3 +84,4 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
+

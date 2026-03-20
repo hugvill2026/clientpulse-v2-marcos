@@ -1,269 +1,236 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  BarChart3,
-  Users,
-  Settings,
-  Calendar,
-  History,
-  HelpCircle,
-  MessageSquare,
-  LayoutGrid,
-  ChevronLeft,
+import { 
+  Users, 
+  MessageSquare, 
+  Settings, 
+  User, 
+  LogOut, 
+  LayoutDashboard, 
   Search,
   Bell,
-  User,
-  PlusCircle,
+  Zap,
+  ShieldCheck,
+  ChevronRight,
   Menu,
-  X,
-  Clock
+  Moon
 } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '../../utils/cn'
-import { ReminderScheduler } from './ReminderScheduler'
-import { QuickActionModal } from './QuickActionModal'
+import { useAuth } from '../../services/firebase/auth.provider'
+import { useAuthStore } from '../../store/authStore'
+import { UserService, type UserProfileData } from '../../services/firebase/firestore'
+import toast from 'react-hot-toast'
 
-// Navigation Items
-const navItems = [
-  { id: 'dashboard', label: 'Tablero', icon: BarChart3, path: '/dashboard' },
-  { id: 'clients', label: 'Clientes', icon: Users, path: '/clients' },
-  { id: 'categories', label: 'Categorías', icon: LayoutGrid, path: '/categories' },
-  { id: 'messages', label: 'Mensajes', icon: MessageSquare, path: '/messages' },
-  { id: 'calendar', label: 'Calendario', icon: Calendar, path: '/calendar' },
-  { id: 'history', label: 'Historial', icon: History, path: '/history' },
+const sidebarItems = [
+  { icon: LayoutDashboard, label: 'Centro de Mando', path: '/dashboard', color: 'bg-teal-gradient' },
+  { icon: Users, label: 'Directorio VIP', path: '/clients', color: 'bg-indigo-gradient' },
+  { icon: MessageSquare, label: 'Mensajería Élite', path: '/reminders', color: 'bg-rose-gradient' },
+  { icon: User, label: 'Identidad PRO', path: '/profile', color: 'bg-slate-900' },
+  { icon: Settings, label: 'Configuración', path: '/settings', color: 'bg-slate-950' },
 ]
 
-const bottomNavItems = [
-  { id: 'help', label: 'Ayuda', icon: HelpCircle, path: '/help' },
-  { id: 'settings', label: 'Configuración', icon: Settings, path: '/settings' },
-]
-
-// Sidebar Component
-const Sidebar = ({ isOpen, setOpen }: { isOpen: boolean, setOpen: (o: boolean) => void }) => {
+const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation()
+  const { logout } = useAuth()
+  const { user } = useAuthStore()
+  const [profile, setProfile] = useState<UserProfileData | null>(null)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (user?.uid) {
+        const data = await UserService.getUserProfile(user.uid)
+        setProfile(data)
+      }
+    }
+    fetchProfile()
+  }, [user])
+
+  const handleLogout = async () => {
+    if (window.confirm('¿Seguro que deseas salir del entorno seguro?')) {
+      const toastId = toast.loading('Cerrando Sesión VIP...')
+      try {
+        await logout()
+        toast.success('Sesión finalizada. Identidad aislada.', { id: toastId })
+      } catch (e) {
+        toast.error('Fallo técnico al salir.')
+      }
+    }
+  }
+
+  const userName = profile?.fullName || user?.displayName?.split(' ')[0] || user?.email?.split('@')[0] || 'Usuario'
 
   return (
-    <motion.aside
-      initial={false}
-      animate={{ width: isOpen ? 260 : 80 }}
-      className="hidden md:flex flex-col h-screen bg-slate-900 border-r border-slate-800 fixed left-0 top-0 z-50 text-slate-400 overflow-hidden group shadow-2xl"
-    >
-      {/* Branding */}
-      <div className="h-24 flex items-center px-4 gap-3 w-full overflow-hidden border-b border-white/5 bg-white/5">
-        <div className="flex-shrink-0 animate-pulse-subtle">
-          {isOpen ? (
-            <img src="/logo_clientpulse_v2.svg" alt="ClientPulse Logo" className="h-[52px] w-auto min-w-[180px] drop-shadow-[0_0_15px_rgba(20,184,166,0.2)]" />
-          ) : (
-            <img src="/logo_clientpulse_v2.svg" alt="ClientPulse Logo" className="h-10 w-10 object-left object-cover scale-150 ml-1" />
-          )}
-        </div>
-        {isOpen && (
-          <motion.span 
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            className="text-white font-display font-medium text-lg"
-          >
-            clientpulse
-          </motion.span>
-        )}
-      </div>
-
-      {/* Nav Section */}
-      <nav className="flex-1 px-4 py-6 space-y-2">
-        {navItems.map((item) => {
-          const isActive = location.pathname === item.path
-          return (
-            <Link 
-              key={item.id} 
-              to={item.path}
-              className={cn(
-                "flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 hover:text-white capitalize group relative",
-                isActive ? "bg-teal-500 text-white shadow-lg shadow-teal-500/20 active-nav" : "hover:bg-white/5"
-              )}
-            >
-              <item.icon className={cn("w-5 h-5 flex-shrink-0", isActive && "text-white pulse-subtle")} />
-              {isOpen && <span className="font-interface font-medium whitespace-nowrap">{item.label}</span>}
-            </Link>
-          )
-        })}
-      </nav>
-
-      {/* Bottom Nav */}
-      <div className="px-4 py-6 border-t border-slate-800 space-y-2">
-        {bottomNavItems.map((item) => {
-          const isActive = location.pathname === item.path
-          return (
-            <Link 
-              key={item.id} 
-              to={item.path}
-              className={cn(
-                "flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 hover:text-white capitalize group",
-                isActive ? "bg-white/10 text-white" : "hover:bg-white/5"
-              )}
-            >
-              <item.icon className="w-5 h-5 flex-shrink-0" />
-              {isOpen && <span className="font-interface font-medium whitespace-nowrap">{item.label}</span>}
-            </Link>
-          )
-        })}
-        {/* Toggle Collapse */}
-        <button 
-          onClick={() => setOpen(!isOpen)}
-          className="w-full flex items-center gap-4 px-4 py-3 rounded-2xl transition-all duration-300 hover:bg-white/5 hover:text-white group"
-        >
-          <div className={cn("transition-transform duration-500", !isOpen && "rotate-180")}>
-            <ChevronLeft className="w-5 h-5" />
-          </div>
-          {isOpen && <span className="font-interface font-medium">Colapsar</span>}
-        </button>
-      </div>
-    </motion.aside>
-  )
-}
-
-// Top Bar Component
-const TopBar = ({ setMobileMenu }: { setMobileMenu: (o: boolean) => void }) => {
-  return (
-    <header className="h-20 glass border-b border-slate-200 fixed top-0 left-0 right-0 z-40 px-4 md:px-8 flex items-center justify-between">
-      <div className="flex items-center gap-4">
-        <button 
-          onClick={() => setMobileMenu(true)}
-          className="md:hidden p-2 hover:bg-slate-100 rounded-xl transition-colors"
-        >
-          <Menu className="w-6 h-6 text-slate-600" />
-        </button>
-        <div className="hidden md:flex relative group">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input 
-            type="text" 
-            placeholder="Buscar..." 
-            className="bg-slate-50 border border-slate-200 rounded-2xl pl-11 pr-6 py-2.5 w-64 text-sm focus:w-80 transition-all duration-300 outline-none focus:ring-4 focus:ring-teal-500/5 focus:border-teal-500"
-          />
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2 md:gap-4">
-        <button className="p-2.5 hover:bg-slate-50 rounded-2xl relative transition-all group active:scale-95">
-          <Bell className="w-5 h-5 text-slate-600 group-hover:text-teal-500 transition-colors" />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white animate-pulse" />
-        </button>
-        <Link 
-          to="/profile"
-          className="flex items-center gap-3 p-1 pr-4 rounded-full hover:bg-slate-50 transition-all border border-transparent hover:border-slate-100 group"
-        >
-          <div className="w-9 h-9 rounded-full bg-slate-200 overflow-hidden border-2 border-slate-100 shadow-sm transition-transform group-hover:scale-105">
-            <User className="w-full h-full p-2 text-slate-400" />
-          </div>
-          <div className="hidden lg:block text-left">
-            <p className="text-xs font-bold text-slate-800 line-clamp-1">Víctor Villegas</p>
-            <p className="text-[10px] text-slate-400 font-medium">Plan Pro</p>
-          </div>
-        </Link>
-      </div>
-    </header>
-  )
-}
-
-// Mobile Overlay Menu
-const MobileNav = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => (
-  <AnimatePresence>
-    {isOpen && (
-      <>
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[60] md:hidden"
-        />
-        <motion.div
-          initial={{ x: '-100%' }}
-          animate={{ x: 0 }}
-          exit={{ x: '-100%' }}
-          transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-          className="fixed inset-y-0 left-0 w-[280px] bg-white z-[70] md:hidden shadow-2xl p-6 flex flex-col pt-0"
-        >
-          <div className="h-20 flex items-center justify-between mb-4">
-             <div className="flex items-center gap-3">
-               <img src="/logo_clientpulse_v2.svg" alt="ClientPulse Logo" className="h-9 w-auto" />
-             </div>
-             <button onClick={onClose} className="p-2 bg-slate-100 rounded-xl"><X className="w-5 h-5 text-slate-500" /></button>
-          </div>
-          <nav className="flex-1 space-y-1">
-            {navItems.map(item => (
-              <Link key={item.id} to={item.path} onClick={onClose} className="flex items-center gap-4 p-4 rounded-2xl hover:bg-teal-50 transition-colors">
-                <item.icon className="w-5 h-5 text-slate-400" />
-                <span className="font-medium text-slate-600">{item.label}</span>
-              </Link>
-            ))}
-          </nav>
-        </motion.div>
-      </>
-    )}
-  </AnimatePresence>
-)
-
-// Main Layout
-export const AppLayout = ({ children, title }: { children: React.ReactNode, title?: string }) => {
-  const [isSidebarOpen, setSidebarOpen] = useState(true)
-  const [isMobileNavOpen, setMobileNavOpen] = useState(false)
-  const [isQuickActionOpen, setQuickActionOpen] = useState(false)
-
-  return (
-    <div className="flex min-h-screen bg-slate-50">
-      <ReminderScheduler />
-      {/* Sidebar Desktop */}
-      <Sidebar isOpen={isSidebarOpen} setOpen={setSidebarOpen} />
+    <div className="min-h-screen bg-slate-50 flex overflow-hidden font-['Inter']">
       
-      {/* Mobile Nav Overlay */}
-      <MobileNav isOpen={isMobileNavOpen} onClose={() => setMobileNavOpen(false)} />
+      {/* Sidebar - Desktop */}
+      <aside className="hidden lg:flex flex-col w-96 bg-slate-950 text-white relative z-50 shadow-3xl">
+         <div className="p-12 relative z-10">
+            <Link to="/dashboard" className="flex items-center gap-6 group">
+               <div className="w-16 h-16 bg-teal-gradient rounded-3xl flex items-center justify-center shadow-2xl shadow-teal-500/20 group-hover:rotate-12 transition-transform duration-500">
+                  <Zap className="w-9 h-9 text-white fill-white" />
+               </div>
+               <div className="flex flex-col">
+                  <span className="text-2xl font-black tracking-tightest leading-none">CLIENTPULSE</span>
+                  <span className="text-[10px] font-black text-teal-400 uppercase tracking-[0.4em] mt-1">Nivel Institucional</span>
+               </div>
+            </Link>
+         </div>
+
+         <nav className="flex-1 px-8 py-4 space-y-4 relative z-10 overflow-y-auto scrollbar-hide">
+            {sidebarItems.map((item) => {
+               const isActive = location.pathname === item.path
+               return (
+                  <Link 
+                    key={item.path} 
+                    to={item.path}
+                    className={cn(
+                      "group flex items-center justify-between px-8 py-6 rounded-[32px] transition-all duration-500 border-2 border-transparent",
+                      isActive 
+                        ? "bg-white text-slate-950 shadow-2xl scale-[1.02]" 
+                        : "text-slate-400 hover:bg-white/5 hover:text-white"
+                    )}
+                  >
+                     <div className="flex items-center gap-6">
+                        <div className={cn(
+                          "w-12 h-12 rounded-2xl flex items-center justify-center transition-all",
+                          isActive ? item.color : "bg-white/5 text-slate-500 group-hover:bg-white/10"
+                        )}>
+                           <item.icon className="w-6 h-6" />
+                        </div>
+                        <span className="font-black text-sm uppercase tracking-widest">{item.label}</span>
+                     </div>
+                     {isActive && <ChevronRight className="w-5 h-5 text-teal-500" />}
+                  </Link>
+               )
+            })}
+         </nav>
+
+         <div className="p-8 relative z-10">
+            <div className="card-premium bg-white/5 border-white/5 p-8 mb-6 overflow-hidden">
+               <p className="text-[10px] font-black text-teal-400 uppercase tracking-widest mb-3">Sync Status</p>
+               <div className="flex items-center gap-3">
+                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 pulse-teal" />
+                  <span className="text-xs font-black text-white/90">Ecosistema Nube Activo</span>
+               </div>
+            </div>
+
+            <button 
+              onClick={handleLogout}
+              className="w-full h-20 rounded-[28px] bg-rose-500/10 border-2 border-rose-500/20 text-rose-500 font-black uppercase text-[11px] tracking-[0.2em] flex items-center justify-center gap-4 hover:bg-rose-500 hover:text-white transition-all active:scale-95 group"
+            >
+               <LogOut className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
+               Cerrar Lanzamiento
+            </button>
+         </div>
+      </aside>
 
       {/* Main Content Area */}
-      <div 
-        className={cn(
-          "flex-1 flex flex-col transition-all duration-300",
-          "md:ml-20 lg:ml-20", // Default margin for collapsed/expanded sidebar base
-          isSidebarOpen ? "md:ml-[260px]" : "md:ml-[80px]"
-        )}
-      >
-        <TopBar setMobileMenu={setMobileNavOpen} />
-        
-        <main className="flex-1 pt-24 pb-12 px-4 md:px-8 lg:px-12 max-w-7xl mx-auto w-full">
-          {/* Page Heading (Optional) */}
-          {title && (
-            <motion.div 
-              initial={{ opacity: 0, y: -10 }} 
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-8"
-            >
-              <h1 className="text-3xl font-bold text-slate-900">{title}</h1>
-            </motion.div>
-          )}
-          
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            {children}
-          </motion.div>
-        </main>
-
-        {/* Floating Action Button (FAB) as per spec */}
-        <div className="fixed bottom-8 right-8 z-[90]">
-          <button onClick={() => setQuickActionOpen(true)} className="w-14 h-14 bg-teal-500 rounded-full text-white shadow-2xl flex items-center justify-center hover:scale-110 active:scale-90 transition-all group ring-8 ring-teal-500/10">
-            <PlusCircle className="w-7 h-7" />
-            <div className="absolute right-16 bg-slate-900 text-white px-4 py-2 rounded-xl text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-xl">
-              Acción Rápida
+      <main className="flex-1 flex flex-col h-screen relative overflow-hidden bg-slate-50">
+         
+         {/* Top Bar */}
+         <header className="h-28 flex items-center justify-between px-12 relative z-40 bg-white/80 backdrop-blur-xl border-b border-slate-100">
+            <div className="flex items-center gap-8 flex-1 max-w-4xl">
+               <div className="relative group w-full">
+                  <Search className="absolute left-8 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-300 group-focus-within:text-teal-600 transition-colors" />
+                  <input 
+                    type="text" 
+                    placeholder="Búsqueda táctica de clientes..." 
+                    className="input-premium h-[76px] pl-20 rounded-[32px] border-none shadow-sm focus:shadow-2xl transition-all"
+                  />
+               </div>
             </div>
-          </button>
-        </div>
-        
-        <QuickActionModal 
-          isOpen={isQuickActionOpen} 
-          onClose={() => setQuickActionOpen(false)} 
-        />
-      </div>
+
+            <div className="flex items-center gap-8 ml-12">
+               <div className="flex items-center gap-4 bg-white p-2 rounded-3xl border border-slate-50 h-20 shadow-xl">
+                  <button className="w-14 h-14 rounded-2xl flex items-center justify-center text-slate-400 hover:bg-white hover:text-teal-500 transition-all active:scale-90 relative">
+                     <Bell className="w-6 h-6" />
+                     <div className="absolute top-4 right-4 w-2 h-2 bg-rose-500 rounded-full border-2 border-white" />
+                  </button>
+                  <button className="w-14 h-14 rounded-2xl flex items-center justify-center text-slate-400 hover:bg-white hover:text-slate-900 transition-all active:scale-90">
+                     <Moon className="w-6 h-6" />
+                  </button>
+               </div>
+
+               <Link to="/profile" className="flex items-center gap-5 bg-white p-3 pr-8 rounded-[32px] border-4 border-slate-50 shadow-2xl hover:border-teal-500/20 transition-all group">
+                  <div className="w-14 h-14 rounded-2xl bg-teal-gradient text-white flex items-center justify-center font-black text-2xl border-2 border-white shadow-xl overflow-hidden text-sm">
+                     {user?.photoURL ? <img src={user.photoURL} alt="V" className="w-full h-full object-cover" /> : userName[0]}
+                  </div>
+                  <div className="flex flex-col">
+                     <span className="text-slate-900 font-black text-sm tracking-tight leading-none group-hover:text-teal-600 transition-colors uppercase">{userName}</span>
+                     <div className="flex items-center gap-1.5 mt-1">
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Identidad Verificada</span>
+                     </div>
+                  </div>
+               </Link>
+
+               <button onClick={() => setIsMobileMenuOpen(true)} className="lg:hidden w-16 h-16 bg-slate-950 text-white rounded-2xl flex items-center justify-center">
+                  <Menu className="w-8 h-8" />
+               </button>
+            </div>
+         </header>
+
+         {/* Content Viewport */}
+         <div className="flex-1 overflow-y-auto px-12 pb-12 pt-4 relative">
+            <div className="max-w-[1920px] mx-auto">
+               {children}
+            </div>
+         </div>
+
+         {/* Footer */}
+         <footer className="h-20 flex items-center justify-between px-12 bg-white/30 border-t border-slate-100 text-slate-400">
+            <div className="flex items-center gap-4">
+               <span className="text-[10px] font-black uppercase tracking-[0.4em]">ClientPulse V2</span>
+               <div className="w-1 h-1 bg-slate-300 rounded-full" />
+               <span className="text-[10px] font-black uppercase tracking-widest text-emerald-500">Premium Institutional</span>
+            </div>
+            <p className="text-[10px] font-bold italic">© 2026 Entorno Táctico Corporativo</p>
+         </footer>
+      </main>
+
+      {/* Mobile Menu Overlay */}
+      <AnimatePresence>
+         {isMobileMenuOpen && (
+            <motion.div 
+               initial={{ opacity: 0 }}
+               animate={{ opacity: 1 }}
+               exit={{ opacity: 0 }}
+               className="fixed inset-0 bg-slate-950/90 backdrop-blur-3xl z-[100] p-12 flex flex-col justify-between"
+            >
+               <div className="flex justify-between items-center">
+                  <div className="w-16 h-16 bg-teal-gradient rounded-2xl flex items-center justify-center">
+                     <Zap className="w-9 h-9 text-white fill-white" />
+                  </div>
+                  <button onClick={() => setIsMobileMenuOpen(false)} className="w-16 h-16 bg-white/10 text-white rounded-full flex items-center justify-center">
+                     <ChevronRight className="rotate-180 w-8 h-8" />
+                  </button>
+               </div>
+
+               <nav className="space-y-4">
+                  {sidebarItems.map(item => (
+                     <Link 
+                       key={item.path} 
+                       to={item.path} 
+                       onClick={() => setIsMobileMenuOpen(false)}
+                       className="flex items-center gap-8 py-6 text-4xl font-black text-white hover:text-teal-400 transition-all uppercase tracking-tightest"
+                     >
+                        <item.icon className="w-12 h-12" />
+                        {item.label}
+                     </Link>
+                  ))}
+               </nav>
+
+               <button 
+                 onClick={handleLogout}
+                 className="w-full h-24 bg-rose-500 text-white rounded-[40px] font-black uppercase text-xl shadow-2xl shadow-rose-500/20"
+               >
+                  Finalizar Sesión
+               </button>
+            </motion.div>
+         )}
+      </AnimatePresence>
     </div>
   )
 }

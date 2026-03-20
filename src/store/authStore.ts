@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
+import { persist, createJSONStorage } from 'zustand/middleware'
 
 interface UserState {
   user: any | null
@@ -15,11 +15,25 @@ export const useAuthStore = create<UserState>()(
       user: null,
       loading: true,
       isAuthenticated: false,
-      setUser: (user) => set({ user, isAuthenticated: !!user, loading: false }),
-      logout: () => set({ user: null, isAuthenticated: false, loading: false }),
+      setUser: (user) => set({ 
+        user, 
+        isAuthenticated: !!user, 
+        loading: false 
+      }),
+      logout: () => {
+        // Clear everything to prevent identity leaks
+        set({ 
+          user: null, 
+          isAuthenticated: false, 
+          loading: false 
+        })
+        localStorage.removeItem('clientpulse-auth')
+      },
     }),
     {
       name: 'clientpulse-auth',
+      storage: createJSONStorage(() => localStorage),
     }
   )
 )
+
