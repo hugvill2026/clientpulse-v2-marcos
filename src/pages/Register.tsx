@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { 
   User, 
@@ -31,15 +32,19 @@ type RegisterForm = z.infer<typeof registerSchema>
 
 const Register = () => {
   const navigate = useNavigate()
-  const { registerWithEmail, loginWithGoogle } = useAuth()
+  const { registerWithEmail, loginWithGoogle, logout } = useAuth()
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<RegisterForm>({
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
   })
+
+  useEffect(() => {
+    // Force logout of any previous session to ensure identity isolation
+    const cleanSession = async () => {
+       try { await logout(); } catch (e) { /* silent clean */ }
+    }
+    cleanSession();
+  }, []);
 
   const onSubmit = async (data: RegisterForm) => {
     const toastId = toast.loading('Desplegando infraestructura personal...')
@@ -57,7 +62,7 @@ const Register = () => {
       await UserService.updateUserProfile(user.uid, profile)
 
       // Sync to Master Sheet (Admin Audit)
-      await GoogleSheetsService.sync(undefined, 'USER', profile);
+      await GoogleSheetsService.sync(undefined, 'CLIENT', profile);
 
       toast.success('¡Academia activada! Bienvenid@ a la Élite.', { id: toastId })
       navigate('/dashboard')
@@ -83,7 +88,7 @@ const Register = () => {
       await UserService.updateUserProfile(user.uid, profile)
       
       // Sync to Master Sheet (Admin Audit)
-      await GoogleSheetsService.sync(undefined, 'USER', profile);
+      await GoogleSheetsService.sync(undefined, 'CLIENT', profile);
 
       toast.success(`Identidad verificada: ${user.displayName}. Bienvenido al sistema.`, { id: toastId })
       navigate('/dashboard')

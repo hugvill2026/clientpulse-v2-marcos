@@ -9,7 +9,6 @@ import {
   getDoc,
   query,
   where,
-  orderBy,
   Timestamp,
   serverTimestamp
 } from 'firebase/firestore';
@@ -58,6 +57,7 @@ export interface ReminderData {
   clientName: string;
   clientWhatsapp: string;
   messageText: string;
+  messageImage?: string;
   scheduledAt: any;
   status: 'pending' | 'sent' | 'failed';
   type: 'once' | 'recurring' | 'manual';
@@ -91,14 +91,20 @@ export const ClientService = {
   async getClients(userId: string): Promise<ClientData[]> {
     const q = query(
       collection(db, CLIENTS_COLLECTION),
-      where('userId', '==', userId),
-      orderBy('createdAt', 'desc')
+      where('userId', '==', userId)
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ 
+    const data = querySnapshot.docs.map(doc => ({ 
       id: doc.id, 
       ...doc.data() 
     } as ClientData));
+    
+    // Sort client-side to avoid indexing requirement for now
+    return data.sort((a, b) => {
+      const timeA = a.createdAt?.toMillis?.() || 0;
+      const timeB = b.createdAt?.toMillis?.() || 0;
+      return timeB - timeA;
+    });
   },
 
   async createClient(data: Omit<ClientData, 'id' | 'createdAt'>): Promise<string> {
@@ -115,7 +121,6 @@ export const ClientService = {
   },
 
   async deleteClient(clientId: string) {
-    // CASCADING DELETE: purge all reminders associated with this client to maintain institutional order
     const remindersQuery = query(
       collection(db, REMINDERS_COLLECTION),
       where('clientId', '==', clientId)
@@ -134,19 +139,24 @@ export const ReminderService = {
   async getPendingReminders(userId: string): Promise<ReminderData[]> {
     const q = query(
       collection(db, REMINDERS_COLLECTION),
-      where('userId', '==', userId),
-      orderBy('scheduledAt', 'asc')
+      where('userId', '==', userId)
     );
     const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => {
+    const reminders = querySnapshot.docs.map(doc => {
       const data = doc.data();
-      // Handle Firebase Timestamp conversion
       const scheduledAt = data.scheduledAt instanceof Timestamp ? data.scheduledAt.toDate() : data.scheduledAt;
       return { 
         id: doc.id, 
         ...data,
         scheduledAt 
       } as ReminderData;
+    });
+
+    // Client-side sort by scheduledAt
+    return reminders.sort((a, b) => {
+      const dateA = a.scheduledAt instanceof Date ? a.scheduledAt.getTime() : new Date(a.scheduledAt).getTime();
+      const dateB = b.scheduledAt instanceof Date ? b.scheduledAt.getTime() : new Date(b.scheduledAt).getTime();
+      return dateA - dateB;
     });
   },
 

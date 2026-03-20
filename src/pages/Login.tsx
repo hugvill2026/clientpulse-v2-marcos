@@ -28,15 +28,19 @@ type LoginForm = z.infer<typeof loginSchema>
 const Login = () => {
   const [showPassword, setShowPassword] = React.useState(false)
   const navigate = useNavigate()
-  const { loginWithEmail, loginWithGoogle } = useAuth()
+  const { loginWithEmail, loginWithGoogle, logout } = useAuth()
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = useForm<LoginForm>({
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
   })
+
+  // Mandatory Session Purge for Data Isolation
+  React.useEffect(() => {
+    const purgeSession = async () => {
+       try { await logout(); } catch (e) { /* ignore */ }
+    }
+    purgeSession();
+  }, []);
 
   // Visual Greeting Cycle
   const [cycle, setCycle] = React.useState(0)

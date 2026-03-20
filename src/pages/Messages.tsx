@@ -17,7 +17,8 @@ import {
   Send as Telegram,
   TrendingUp,
   Sparkles,
-  Edit2
+  Edit2,
+  Image as ImageIcon
 } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { format } from 'date-fns'
@@ -27,7 +28,10 @@ const MessageCard = ({ msg, onDelete, onEdit }: { msg: ReminderData, onDelete: (
   const isSent = msg.status === 'sent'
 
   const handleLaunchChannel = (channel: 'whatsapp' | 'telegram' | 'email') => {
-    const finalMessage = msg.messageText.replace(/{{nombre}}/gi, msg.clientName)
+    let finalMessage = msg.messageText.replace(/{{nombre}}/gi, msg.clientName)
+    if (msg.messageImage) {
+       finalMessage += `\n\n🖼️ Imagen de Campaña: ${msg.messageImage}`
+    }
     const cleanPhone = msg.clientWhatsapp.replace(/\D/g, '')
 
     if (channel === 'whatsapp') {
@@ -35,11 +39,11 @@ const MessageCard = ({ msg, onDelete, onEdit }: { msg: ReminderData, onDelete: (
        window.open(url, '_blank')
        toast.success('Lanzando WhatsApp...', { icon: '🚀' })
     } else if (channel === 'telegram') {
-       const url = `https://t.me/share/url?url=&text=${encodeURIComponent(finalMessage)}`
+       const url = `https://t.me/share/url?url=${encodeURIComponent(msg.messageImage || '')}&text=${encodeURIComponent(finalMessage)}`
        window.open(url, '_blank')
        toast.success('Lanzando Telegram...', { icon: '✈️' })
     } else if (channel === 'email') {
-       const url = `mailto:?subject=Contacto de ClientPulse&body=${encodeURIComponent(finalMessage)}`
+       const url = `mailto:?subject=Impacto de ClientPulse&body=${encodeURIComponent(finalMessage)}`
        window.open(url, '_blank')
        toast.success('Preparando Email...', { icon: '📧' })
     }
@@ -53,7 +57,7 @@ const MessageCard = ({ msg, onDelete, onEdit }: { msg: ReminderData, onDelete: (
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       className={cn(
-        "card-premium h-full min-h-[480px] flex flex-col justify-between group border-2 border-slate-100 hover:border-teal-500/30 transition-all shadow-xl relative overflow-hidden bg-white/50 backdrop-blur-sm",
+        "card-premium h-full min-h-[500px] flex flex-col justify-between group border-2 border-slate-100 hover:border-teal-500/30 transition-all shadow-xl relative overflow-hidden bg-white/50 backdrop-blur-sm",
         isSent ? "opacity-80 grayscale-[0.2]" : "opacity-100"
       )}
     >
@@ -61,9 +65,7 @@ const MessageCard = ({ msg, onDelete, onEdit }: { msg: ReminderData, onDelete: (
       
       <div className="flex justify-between items-start mb-6">
         <div className="flex gap-4">
-          <div className={cn(
-             "w-16 h-16 rounded-[24px] flex items-center justify-center font-black text-2xl border-4 border-white shadow-xl bg-teal-gradient text-white"
-          )}>
+          <div className="w-16 h-16 rounded-[24px] flex items-center justify-center font-black text-2xl border-4 border-white shadow-xl bg-teal-gradient text-white">
             {msg.clientName[0]}
           </div>
           <div className="pt-1">
@@ -82,9 +84,13 @@ const MessageCard = ({ msg, onDelete, onEdit }: { msg: ReminderData, onDelete: (
         </div>
       </div>
 
-      <div className="flex-1 my-6 relative overflow-hidden p-8 bg-slate-50/80 rounded-[40px] border border-slate-100/50 shadow-inner group-hover:bg-white transition-all min-h-[160px] flex items-center justify-center">
-         <Sparkles className="absolute -top-4 -right-4 w-12 h-12 text-teal-500/5 rotate-12" />
-         <p className="text-base text-slate-600 font-interface leading-relaxed italic text-center w-full font-medium">
+      <div className="flex-1 my-6 relative overflow-hidden p-6 bg-slate-50/80 rounded-[40px] border border-slate-100/50 shadow-inner group-hover:bg-white transition-all min-h-[180px] flex flex-col items-center justify-center text-center space-y-4">
+         {msg.messageImage && (
+           <div className="w-full h-32 rounded-2xl overflow-hidden border-2 border-white shadow-md mb-2">
+              <img src={msg.messageImage} alt="M" className="w-full h-full object-cover" />
+           </div>
+         )}
+         <p className="text-sm text-slate-600 font-interface leading-relaxed italic w-full font-medium">
             "{msg.messageText.replace('{{nombre}}', msg.clientName)}"
           </p>
       </div>
@@ -97,7 +103,7 @@ const MessageCard = ({ msg, onDelete, onEdit }: { msg: ReminderData, onDelete: (
            </div>
            <span className={cn(
              "px-4 py-1.5 rounded-full text-[10px] font-black tracking-widest uppercase",
-             isSent ? "bg-slate-100 text-slate-500" : "bg-teal-100 text-teal-700 pulse-teal shadow-lg shadow-teal-500/10"
+             isSent ? "bg-slate-100 text-slate-500" : "bg-teal-100 text-teal-700 shadow-lg shadow-teal-500/10"
            )}>
              {isSent ? 'Despachado' : 'Pendiente'}
            </span>
@@ -173,6 +179,7 @@ const Messages = () => {
         clientName: client.name,
         clientWhatsapp: client.whatsapp,
         messageText: formData.text,
+        messageImage: formData.imageUrl || '',
         scheduledAt: new Date(formData.scheduledAt)
       }
 
@@ -186,6 +193,7 @@ const Messages = () => {
            userId: user.uid,
            clientName: client.name,
            text: formData.text,
+           imageUrl: formData.imageUrl,
            scheduledAt: formData.scheduledAt
         })
         toast.success('Programación en la nube activa ☁️', { id: toastId })
@@ -217,8 +225,6 @@ const Messages = () => {
   return (
     <AppLayout>
       <div className="space-y-12 pb-20">
-        
-        {/* Institutional Toolbar */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8 pt-4">
            <div className="flex-1 space-y-4">
               <div className="flex items-center gap-3 bg-white w-fit px-4 py-2 rounded-full border border-slate-100 shadow-sm">
@@ -237,67 +243,40 @@ const Messages = () => {
                    { id: 'pending', label: 'En Cola', color: 'bg-teal-600' },
                    { id: 'sent', label: 'Efectivos', color: 'bg-emerald-600' }
                  ].map(f => (
-                    <button 
-                      key={f.id}
-                      onClick={() => setFilter(f.id as any)}
-                      className={cn(
-                        "px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all h-12 flex items-center justify-center",
-                        filter === f.id ? cn(f.color, "text-white") : "text-slate-400 hover:text-slate-600"
-                      )}
-                    >{f.label}</button>
+                    <button key={f.id} onClick={() => setFilter(f.id as any)} className={cn("px-8 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all h-12 flex items-center justify-center", filter === f.id ? cn(f.color, "text-white shadow-lg") : "text-slate-400 hover:text-slate-600")}>{f.label}</button>
                  ))}
               </div>
-              <button 
-                onClick={() => { setEditingMsg(null); setIsModalOpen(true); }}
-                className="btn-primary h-20 px-10 rounded-[32px] group"
-              >
-                 <Plus className="w-6 h-6 group-hover:rotate-90 transition-transform" />
-                 <span>Programar Envío</span>
-              </button>
+              <button onClick={() => { setEditingMsg(null); setIsModalOpen(true); }} className="btn-primary h-20 px-10 rounded-[32px] group"><Plus className="w-6 h-6 group-hover:rotate-90 transition-transform" /><span>Programar Envío</span></button>
            </div>
         </div>
 
-        {/* Dash Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
            {[
-             { label: 'WhatsApp', icon: Smartphone, val: `${filteredReminders.length > 0 ? '99%' : '0%'}`, color: 'text-emerald-500' },
+             { label: 'Multimedia', icon: ImageIcon, val: 'ACTIVE', color: 'text-rose-500' },
              { label: 'Telegram', icon: Telegram, val: '84%', color: 'text-sky-500' },
              { label: 'Email', icon: Mail, val: '72%', color: 'text-slate-800' },
              { label: 'Impacto', icon: TrendingUp, val: '+24%', color: 'text-white', bg: 'bg-teal-gradient' }
            ].map(stat => (
               <div key={stat.label} className={cn("card-premium h-32 flex flex-col justify-between border-slate-100 shadow-xl", stat.bg)}>
-                 <div className={cn("flex items-center gap-3", stat.color || "text-white/60")}>
-                    <stat.icon className="w-4 h-4" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">{stat.label}</span>
-                 </div>
+                 <div className={cn("flex items-center gap-3", stat.color || "text-white/60")}><stat.icon className="w-4 h-4" /><span className="text-[10px] font-black uppercase tracking-widest">{stat.label}</span></div>
                  <p className={cn("text-4xl font-black font-display leading-none", stat.bg ? "text-white" : "text-slate-900")}>{stat.val}</p>
               </div>
            ))}
         </div>
 
-        {/* Operations Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-10">
            <AnimatePresence>
               {filteredReminders.map(msg => (
                  <MessageCard key={msg.id} msg={msg} onDelete={handleDeleteReminder} onEdit={(m) => { setEditingMsg(m); setIsModalOpen(true); }} />
               ))}
               {!loading && filteredReminders.length === 0 && (
-                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="col-span-full py-40 text-center bg-white border-2 border-dashed border-slate-100 rounded-[32px] text-slate-400 font-bold italic">
-                   Bandeja de lanzamiento despejada.
-                 </motion.div>
+                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="col-span-full py-40 text-center bg-white border-2 border-dashed border-slate-100 rounded-[32px] text-slate-400 font-bold italic">Bandeja de lanzamiento despejada.</motion.div>
               )}
            </AnimatePresence>
         </div>
       </div>
 
-      <MessageModal 
-        isOpen={isModalOpen} 
-        onClose={() => { setIsModalOpen(false); setEditingMsg(null); }} 
-        onSubmit={handleCreateOrUpdateReminder} 
-        clients={clients} 
-        initialData={editingMsg || undefined}
-        loading={saving} 
-      />
+      <MessageModal isOpen={isModalOpen} onClose={() => { setIsModalOpen(false); setEditingMsg(null); }} onSubmit={handleCreateOrUpdateReminder} clients={clients} initialData={editingMsg || undefined} loading={saving} />
     </AppLayout>
   )
 }

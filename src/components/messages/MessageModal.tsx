@@ -11,8 +11,8 @@ import {
   Sparkles,
   Zap,
   Target,
-  Smartphone,
-  Plus
+  Plus,
+  Image as ImageIcon
 } from 'lucide-react'
 import type { ClientData } from '../../services/firebase/firestore'
 import { cn } from '../../utils/cn'
@@ -22,6 +22,7 @@ import { useEffect } from 'react'
 const messageSchema = z.object({
   name: z.string().min(3, 'Asunto institucional requerido'),
   text: z.string().min(5, 'El cuerpo del mensaje es muy corto'),
+  imageUrl: z.string().url('URL de imagen inválida').optional().or(z.literal('')),
   type: z.enum(['once', 'recurring', 'manual']),
   clientId: z.string().min(1, 'Selecciona un destinatario'),
   scheduledAt: z.string().min(1, 'Define fecha y hora de lanzamiento'),
@@ -52,6 +53,7 @@ const MessageModal = ({ isOpen, onClose, onSubmit, clients, initialData, loading
       reset({
         name: initialData.name || '',
         text: initialData.messageText || '',
+        imageUrl: initialData.messageImage || '',
         type: initialData.type || 'once',
         clientId: initialData.clientId || '',
         scheduledAt: initialData.scheduledAt instanceof Date 
@@ -65,8 +67,6 @@ const MessageModal = ({ isOpen, onClose, onSubmit, clients, initialData, loading
       })
     }
   }, [initialData, reset, isOpen])
-
-  const msgType = watch('type')
 
   const onFormSubmit = async (data: MessageFormValues) => {
     await onSubmit(data)
@@ -88,10 +88,9 @@ const MessageModal = ({ isOpen, onClose, onSubmit, clients, initialData, loading
             initial={{ opacity: 0, scale: 0.9, y: 40 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 40 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl bg-[#F8FAFC] rounded-[48px] shadow-2xl z-[151] overflow-hidden border border-white/40"
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl bg-[#F8FAFC] rounded-[48px] shadow-2xl z-[151] overflow-hidden border border-white/40"
           >
-            <div className="flex flex-col md:flex-row h-full min-h-[600px]">
-               {/* Decorative Sidebar */}
+            <div className="flex flex-col md:flex-row h-full min-h-[650px]">
                <div className="w-full md:w-80 bg-slate-950 p-10 flex flex-col justify-between text-white relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/20 blur-[100px] -mr-32 -mt-32" />
                   <div className="relative z-10 space-y-8">
@@ -100,82 +99,46 @@ const MessageModal = ({ isOpen, onClose, onSubmit, clients, initialData, loading
                      </div>
                      <div className="space-y-4">
                         <h2 className="text-3xl font-black font-display leading-[0.9] tracking-tightest">{initialData ? 'Refinar Despacho' : 'Nuevo Despacho'}</h2>
-                        <p className="text-sm font-bold text-slate-400 opacity-80 leading-relaxed italic">
-                           "La precisión en el mensaje define el éxito comercial."
-                        </p>
+                        <p className="text-sm font-bold text-slate-400 opacity-80 leading-relaxed italic">"Multimedia integrada para mayor impacto."</p>
                      </div>
                   </div>
-                  
                   <div className="relative z-10 space-y-6">
                      <div className="p-6 bg-white/5 rounded-[32px] border border-white/10">
-                        <div className="flex items-center gap-3 text-teal-400 mb-3">
-                           <Sparkles className="w-5 h-5" />
-                           <span className="text-[10px] font-black uppercase tracking-widest">Sugerencia VIP</span>
-                        </div>
-                        <p className="text-xs text-slate-300 font-medium leading-relaxed">
-                           Personaliza cada impacto con la variable dinámica de nombre.
-                        </p>
+                        <div className="flex items-center gap-3 text-teal-400 mb-3"><Sparkles className="w-5 h-5" /><span className="text-[10px] font-black uppercase tracking-widest">Multimedia PRO</span></div>
+                        <p className="text-xs text-slate-300 font-medium leading-relaxed">Incluye una URL de imagen para captar la atención de inmediato.</p>
                      </div>
                   </div>
                </div>
 
-               {/* Form Area */}
-               <div className="flex-1 p-10 md:p-16 overflow-y-auto">
-                  <button type="button" onClick={onClose} className="absolute right-10 top-10 p-4 bg-white rounded-full text-slate-300 hover:text-rose-500 shadow-xl border border-slate-100">
-                     <X className="w-6 h-6" />
-                  </button>
-
+               <div className="flex-1 p-10 md:p-16 overflow-y-auto max-h-[85vh]">
+                  <button type="button" onClick={onClose} className="absolute right-10 top-10 p-4 bg-white rounded-full text-slate-300 hover:text-rose-500 shadow-xl border border-slate-100"><X className="w-6 h-6" /></button>
                   <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-10">
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                         <div className="space-y-3">
                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.25em] ml-2">Asunto Estratégico</label>
-                           <div className="relative group/input">
-                              <Target className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-300 group-focus-within/input:text-teal-600 transition-colors" />
-                              <input {...register('name')} placeholder="Ej. Campaña Navidad PRO" className="input-premium h-20 pl-16 text-lg" />
-                           </div>
+                           <div className="relative group/input"><Target className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-300 group-focus-within/input:text-teal-600 transition-colors" /><input {...register('name')} placeholder="Ej. Campaña Visual" className="input-premium h-20 pl-16 text-lg" /></div>
                            {errors.name && <p className="text-[10px] font-bold text-rose-500 ml-4">{errors.name.message}</p>}
                         </div>
-
                         <div className="space-y-3">
                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.25em] ml-2">Destinatario</label>
-                           <div className="relative group/input">
-                              <User className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-300 group-focus-within/input:text-indigo-600 transition-colors" />
-                              <select {...register('clientId')} className="input-premium h-20 pl-16 text-lg appearance-none bg-white">
-                                 <option value="">Selecciona un contacto...</option>
-                                 {clients.map(c => <option key={c.id} value={c.id}>{c.name} ({c.whatsapp})</option>)}
-                              </select>
-                           </div>
+                           <div className="relative group/input"><User className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-300 group-focus-within/input:text-indigo-600 transition-colors" /><select {...register('clientId')} className="input-premium h-20 pl-16 text-lg appearance-none bg-white"><option value="">Selecciona un contacto...</option>{clients.map(c => <option key={c.id} value={c.id}>{c.name} ({c.whatsapp})</option>)}</select></div>
                         </div>
-
                         <div className="space-y-3">
-                           <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.25em] ml-2">Protocolo</label>
-                           <div className="relative">
-                              <Zap className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-300" />
-                              <select {...register('type')} className="input-premium h-20 pl-16 text-lg appearance-none bg-white">
-                                 <option value="once">Lanzamiento Único</option>
-                                 <option value="recurring">Ciclo de Ventas</option>
-                                 <option value="manual">Manual / Push</option>
-                              </select>
-                           </div>
+                           <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.25em] ml-2">URL de Imagen (Opcional)</label>
+                           <div className="relative group/input"><ImageIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-300 group-focus-within/input:text-rose-500 transition-colors" /><input {...register('imageUrl')} placeholder="https://ejemplo.com/foto.jpg" className="input-premium h-20 pl-16 text-lg" /></div>
                         </div>
-
                         <div className="space-y-3">
                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.25em] ml-2">Programación</label>
-                           <div className="relative group/input">
-                              <Clock className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-300" />
-                              <input type="datetime-local" {...register('scheduledAt')} className="input-premium h-20 pl-16 text-lg" />
-                           </div>
+                           <div className="relative group/input"><Clock className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-300" /><input type="datetime-local" {...register('scheduledAt')} className="input-premium h-20 pl-16 text-lg" /></div>
                         </div>
                      </div>
 
                      <div className="space-y-3">
                         <div className="flex justify-between items-end ml-2">
                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.25em]">Cuerpo del Mensaje</label>
-                           <button type="button" onClick={insertVariable} className="text-[10px] font-black text-teal-600 bg-teal-50 px-4 py-2 rounded-xl border border-teal-100 flex items-center gap-2">
-                              <Plus className="w-4 h-4" /> Insertar {'{{nombre}}'}
-                           </button>
+                           <button type="button" onClick={insertVariable} className="text-[10px] font-black text-teal-600 bg-teal-50 px-4 py-2 rounded-xl border border-teal-100 flex items-center gap-2"><Plus className="w-4 h-4" /> Insertar {'{{nombre}}'}</button>
                         </div>
-                        <textarea {...register('text')} rows={6} className="input-premium py-8 text-lg font-interface leading-relaxed" placeholder="Contenido táctico aquí..." />
+                        <textarea {...register('text')} rows={5} className="input-premium py-8 text-lg leading-relaxed" placeholder="Contenido táctico aquí..." />
                         {errors.text && <p className="text-[10px] font-bold text-rose-500 ml-4">Especifica un mensaje corporativo.</p>}
                      </div>
 
