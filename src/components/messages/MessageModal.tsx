@@ -94,9 +94,9 @@ const MessageModal = ({ isOpen, onClose, onSubmit, clients, initialData, loading
             initial={{ opacity: 0, scale: 0.9, y: 40 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 40 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl bg-[#F8FAFC] rounded-[48px] shadow-2xl z-[151] overflow-hidden border border-white/40"
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl max-h-[90vh] bg-[#F8FAFC] rounded-[48px] shadow-2xl z-[151] overflow-hidden border border-white/40 flex flex-col md:flex-row"
           >
-            <div className="flex flex-col md:flex-row h-full min-h-[650px]">
+            <div className="flex flex-col md:flex-row w-full h-full overflow-hidden">
                <div className="w-full md:w-80 bg-slate-950 p-10 flex flex-col justify-between text-white relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/20 blur-[100px] -mr-32 -mt-32" />
                   <div className="relative z-10 space-y-8">
@@ -116,7 +116,7 @@ const MessageModal = ({ isOpen, onClose, onSubmit, clients, initialData, loading
                   </div>
                </div>
 
-               <div className="flex-1 p-10 md:p-16 overflow-y-auto max-h-[85vh]">
+               <div className="flex-1 p-8 md:p-14 overflow-y-auto custom-scrollbar">
                   <button type="button" onClick={onClose} className="absolute right-10 top-10 p-4 bg-white rounded-full text-slate-300 hover:text-rose-500 shadow-xl border border-slate-100"><X className="w-6 h-6" /></button>
                   <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-10">
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">

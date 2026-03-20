@@ -64,9 +64,9 @@ const ClientModal = ({ isOpen, onClose, onSubmit, initialData, loading }: Client
             initial={{ opacity: 0, scale: 0.9, y: 40 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 40 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl bg-[#F8FAFC] rounded-[48px] shadow-[0_32px_128px_rgba(0,0,0,0.2)] z-[151] overflow-hidden border border-white/40"
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl max-h-[90vh] bg-[#F8FAFC] rounded-[48px] shadow-[0_32px_128px_rgba(0,0,0,0.2)] z-[151] overflow-hidden border border-white/40 flex flex-col md:flex-row"
           >
-            <div className="flex flex-col md:flex-row h-full min-h-[600px]">
+            <div className="flex flex-col md:flex-row w-full h-full overflow-hidden">
                {/* Corporate Identity Sidebar */}
                <div className="w-full md:w-96 bg-slate-950 p-12 flex flex-col justify-between text-white relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-80 h-80 bg-teal-500/20 blur-[120px] -mr-40 -mt-40" />
@@ -93,7 +93,7 @@ const ClientModal = ({ isOpen, onClose, onSubmit, initialData, loading }: Client
                </div>
 
                {/* Institutional Form */}
-               <div className="flex-1 p-10 md:p-20 overflow-y-auto">
+               <div className="flex-1 p-8 md:p-14 overflow-y-auto custom-scrollbar">
                   <button onClick={onClose} className="absolute right-12 top-12 p-5 bg-white rounded-full text-slate-300 hover:text-rose-500 shadow-2xl shadow-slate-200/50 hover:scale-110 active:scale-90 transition-all border border-slate-100">
                      <X className="w-7 h-7" />
                   </button>
