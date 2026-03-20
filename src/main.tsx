@@ -7,6 +7,15 @@ import { AuthProvider } from './services/firebase/auth.provider'
 import App from './App'
 import './index.css'
 
+// Nuclear SW Purge to stop redirect loops
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    for (const registration of registrations) {
+      registration.unregister();
+    }
+  });
+}
+
 // Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
