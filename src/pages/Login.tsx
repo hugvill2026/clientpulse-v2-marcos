@@ -34,11 +34,25 @@ const Login = () => {
     resolver: zodResolver(loginSchema),
   })
 
-  // Mandatory Session Purge for Data Isolation
-  // Mandatory Session Purge for Data Isolation (Soft-purge to avoid loops)
+  // Soft Session Cleanup - Only clears non-auth data to avoid infinite loops
+  // This preserves the Zustand auth state while cleaning stale application data
   React.useEffect(() => {
-    localStorage.clear();
-    sessionStorage.clear();
+    // Only clear specific app keys, NOT the entire localStorage (which would kill auth state)
+    const appKeysToPreserve = ['clientpulse-auth', 'firebase-local-storage-cache'];
+    const allKeys = Object.keys(localStorage);
+
+    allKeys.forEach(key => {
+      if (!appKeysToPreserve.some(preserveKey => key.startsWith(preserveKey.replace('-auth', '')) || key === preserveKey)) {
+        localStorage.removeItem(key);
+      }
+    });
+
+    // Also clean session storage but be more selective
+    Object.keys(sessionStorage).forEach(key => {
+      if (!key.includes('firebase') && !key.includes('auth')) {
+        sessionStorage.removeItem(key);
+      }
+    });
   }, []);
 
   // Visual Greeting Cycle
