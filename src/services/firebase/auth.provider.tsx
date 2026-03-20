@@ -59,14 +59,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       await signOut(auth);
       clearStore();
-      localStorage.clear();
-      sessionStorage.clear();
-      // Only reload if we are not already at login to prevent loops
+      // Soft cleanup - preserve auth-related keys to prevent infinite loops
+      const authKeysToPreserve = ['clientpulse-auth', 'firebase-local-storage-cache'];
+      Object.keys(localStorage).forEach(key => {
+        if (!authKeysToPreserve.includes(key) && !key.startsWith('firebase')) {
+          localStorage.removeItem(key);
+        }
+      });
+      // Only redirect if we are not already at login to prevent loops
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
       }
     } catch (e) {
       console.error(e);
+      // Even on error, try to navigate to login
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     }
   };
 
