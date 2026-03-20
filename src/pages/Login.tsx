@@ -66,13 +66,13 @@ const Login = () => {
       const userCredential = await loginWithGoogle()
       const user = userCredential.user
       
-      // FORCED IDENTITY UPDATE: Eliminates "Marcos" by prioritizing Google Source of Truth
+      // FORCED IDENTITY UPDATE: Eliminates placeholders by prioritizing Google Source of Truth
       const existingProfile = await UserService.getUserProfile(user.uid)
       
-      // If profile is fresh OR has the stale "Marcos" name, update it immediately
-      if (!existingProfile || existingProfile.fullName === 'Marcos') {
+      // If profile is fresh OR has placeholder names, update it immediately
+      if (!existingProfile || existingProfile.fullName.includes('Stale') || existingProfile.fullName === 'User') {
          await UserService.updateUserProfile(user.uid, {
-            fullName: user.displayName || user.email?.split('@')[0] || 'Usuario VIP',
+            fullName: user.displayName || user.email?.split('@')[0] || 'Miembro VIP',
             photoURL: user.photoURL || undefined,
             userId: user.uid,
             companyName: 'Sector Independiente'

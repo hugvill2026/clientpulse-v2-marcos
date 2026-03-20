@@ -62,18 +62,18 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const userName = profile?.fullName || user?.displayName?.split(' ')[0] || user?.email?.split('@')[0] || 'Usuario'
 
   return (
-    <div className="min-h-screen bg-slate-50 grid grid-cols-[320px_1fr] overflow-hidden font-['Inter']">
+    <div className="min-h-screen bg-slate-50 grid grid-cols-1 lg:grid-cols-[300px_1fr] overflow-x-hidden font-['Inter']">
       
       {/* Sidebar - Desktop */}
       <aside className="hidden lg:flex flex-col bg-slate-950 text-white relative z-50 shadow-3xl h-screen overflow-hidden">
-         <div className="p-10 relative z-10">
+         <div className="p-8 relative z-10">
             <Link to="/dashboard" className="flex items-center gap-4 group">
-               <div className="w-14 h-14 bg-teal-gradient rounded-3xl flex items-center justify-center shadow-2xl shadow-teal-500/20 group-hover:rotate-12 transition-transform duration-500 flex-shrink-0">
-                  <Zap className="w-8 h-8 text-white fill-white" />
+               <div className="w-12 h-12 bg-teal-gradient rounded-2xl flex items-center justify-center shadow-2xl shadow-teal-500/20 group-hover:rotate-12 transition-transform duration-500 flex-shrink-0">
+                  <Zap className="w-7 h-7 text-white fill-white" />
                </div>
-               <div className="flex flex-col min-w-0">
-                  <span className="text-xl font-black tracking-tightest leading-none truncate font-display">CLIENTPULSE</span>
-                  <span className="text-[9px] font-black text-teal-400 uppercase tracking-[0.3em] mt-1 whitespace-nowrap">Institutional Desktop</span>
+               <div className="flex flex-col min-w-0 overflow-hidden">
+                  <span className="text-lg font-black tracking-tightest leading-none truncate font-display">CLIENTPULSE</span>
+                  <span className="text-[8px] font-black text-teal-400 uppercase tracking-widest mt-1 truncate">Institutional Desktop</span>
                </div>
             </Link>
          </div>

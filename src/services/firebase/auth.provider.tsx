@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { setUser: setStoreUser, logout: clearStore } = useAuthStore();
 
   useEffect(() => {
-    // Force session persistence to avoid "always Marcos" issues on shared devices
+    // Force session persistence to ensure clean identity isolation
     setPersistence(auth, browserSessionPersistence);
 
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
