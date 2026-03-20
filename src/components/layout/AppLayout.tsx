@@ -62,23 +62,23 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const userName = profile?.fullName || user?.displayName?.split(' ')[0] || user?.email?.split('@')[0] || 'Usuario'
 
   return (
-    <div className="min-h-screen bg-slate-50 flex overflow-hidden font-['Inter']">
+    <div className="min-h-screen bg-slate-50 grid grid-cols-[320px_1fr] overflow-hidden font-['Inter']">
       
       {/* Sidebar - Desktop */}
-      <aside className="hidden lg:flex flex-col w-96 bg-slate-950 text-white relative z-50 shadow-3xl">
-         <div className="p-12 relative z-10">
-            <Link to="/dashboard" className="flex items-center gap-6 group">
-               <div className="w-16 h-16 bg-teal-gradient rounded-3xl flex items-center justify-center shadow-2xl shadow-teal-500/20 group-hover:rotate-12 transition-transform duration-500">
-                  <Zap className="w-9 h-9 text-white fill-white" />
+      <aside className="hidden lg:flex flex-col bg-slate-950 text-white relative z-50 shadow-3xl h-screen overflow-hidden">
+         <div className="p-10 relative z-10">
+            <Link to="/dashboard" className="flex items-center gap-4 group">
+               <div className="w-14 h-14 bg-teal-gradient rounded-3xl flex items-center justify-center shadow-2xl shadow-teal-500/20 group-hover:rotate-12 transition-transform duration-500 flex-shrink-0">
+                  <Zap className="w-8 h-8 text-white fill-white" />
                </div>
-               <div className="flex flex-col">
-                  <span className="text-2xl font-black tracking-tightest leading-none">CLIENTPULSE</span>
-                  <span className="text-[10px] font-black text-teal-400 uppercase tracking-[0.4em] mt-1">Nivel Institucional</span>
+               <div className="flex flex-col min-w-0">
+                  <span className="text-xl font-black tracking-tightest leading-none truncate font-display">CLIENTPULSE</span>
+                  <span className="text-[9px] font-black text-teal-400 uppercase tracking-[0.3em] mt-1 whitespace-nowrap">Institutional Desktop</span>
                </div>
             </Link>
          </div>
 
-         <nav className="flex-1 px-8 py-4 space-y-4 relative z-10 overflow-y-auto scrollbar-hide">
+         <nav className="flex-1 px-6 py-2 space-y-3 relative z-10 overflow-y-auto scrollbar-hide">
             {sidebarItems.map((item) => {
                const isActive = location.pathname === item.path
                return (
@@ -86,58 +86,58 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
                     key={item.path} 
                     to={item.path}
                     className={cn(
-                      "group flex items-center justify-between px-8 py-6 rounded-[32px] transition-all duration-500 border-2 border-transparent",
+                      "group flex items-center justify-between px-6 py-5 rounded-[28px] transition-all duration-300 border-2 border-transparent",
                       isActive 
                         ? "bg-white text-slate-950 shadow-2xl scale-[1.02]" 
                         : "text-slate-400 hover:bg-white/5 hover:text-white"
                     )}
                   >
-                     <div className="flex items-center gap-6">
+                     <div className="flex items-center gap-5 min-w-0">
                         <div className={cn(
-                          "w-12 h-12 rounded-2xl flex items-center justify-center transition-all",
+                          "w-10 h-10 rounded-xl flex items-center justify-center transition-all flex-shrink-0",
                           isActive ? item.color : "bg-white/5 text-slate-500 group-hover:bg-white/10"
                         )}>
-                           <item.icon className="w-6 h-6" />
+                           <item.icon className="w-5 h-5" />
                         </div>
-                        <span className="font-black text-sm uppercase tracking-widest">{item.label}</span>
+                        <span className="font-black text-[11px] uppercase tracking-widest truncate">{item.label}</span>
                      </div>
-                     {isActive && <ChevronRight className="w-5 h-5 text-teal-500" />}
+                     {isActive && <ChevronRight className="w-4 h-4 text-teal-500" />}
                   </Link>
                )
             })}
          </nav>
 
-         <div className="p-8 relative z-10">
-            <div className="card-premium bg-white/5 border-white/5 p-8 mb-6 overflow-hidden">
-               <p className="text-[10px] font-black text-teal-400 uppercase tracking-widest mb-3">Sync Status</p>
+         <div className="p-6 relative z-10">
+            <div className="card-premium bg-white/5 border-white/5 p-6 mb-4 overflow-hidden">
+               <p className="text-[9px] font-black text-teal-400 uppercase tracking-widest mb-2">Sync Status</p>
                <div className="flex items-center gap-3">
-                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 pulse-teal" />
-                  <span className="text-xs font-black text-white/90">Ecosistema Nube Activo</span>
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 pulse-teal" />
+                  <span className="text-[10px] font-black text-white/90">Ecosistema Nube Activo</span>
                </div>
             </div>
 
             <button 
               onClick={handleLogout}
-              className="w-full h-20 rounded-[28px] bg-rose-500/10 border-2 border-rose-500/20 text-rose-500 font-black uppercase text-[11px] tracking-[0.2em] flex items-center justify-center gap-4 hover:bg-rose-500 hover:text-white transition-all active:scale-95 group"
+              className="w-full h-16 rounded-[24px] bg-rose-500/10 border-2 border-rose-500/20 text-rose-500 font-black uppercase text-[10px] tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-rose-500 hover:text-white transition-all active:scale-95 group"
             >
-               <LogOut className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
-               Cerrar Lanzamiento
+               <LogOut className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+               Desconectar
             </button>
          </div>
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col h-screen relative overflow-hidden bg-slate-50">
+      <main className="flex-1 flex flex-col h-screen relative overflow-hidden bg-slate-50 min-w-0">
          
          {/* Top Bar */}
-         <header className="h-28 flex items-center justify-between px-12 relative z-40 bg-white/80 backdrop-blur-xl border-b border-slate-100">
-            <div className="flex items-center gap-8 flex-1 max-w-4xl">
+         <header className="h-24 flex items-center justify-between px-10 relative z-40 bg-white/80 backdrop-blur-xl border-b border-slate-100 flex-shrink-0">
+            <div className="flex items-center gap-6 flex-1 max-w-2xl min-w-0">
                <div className="relative group w-full">
-                  <Search className="absolute left-8 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-300 group-focus-within:text-teal-600 transition-colors" />
+                  <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-teal-600 transition-colors" />
                   <input 
                     type="text" 
-                    placeholder="Búsqueda táctica de clientes..." 
-                    className="input-premium h-[76px] pl-20 rounded-[32px] border-none shadow-sm focus:shadow-2xl transition-all"
+                    placeholder="Búsqueda táctica..." 
+                    className="input-premium h-14 pl-16 rounded-[24px] border-none shadow-sm focus:shadow-xl transition-all w-full"
                   />
                </div>
             </div>
@@ -153,15 +153,15 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
                   </button>
                </div>
 
-               <Link to="/profile" className="flex items-center gap-5 bg-white p-3 pr-8 rounded-[32px] border-4 border-slate-50 shadow-2xl hover:border-teal-500/20 transition-all group">
-                  <div className="w-14 h-14 rounded-2xl bg-teal-gradient text-white flex items-center justify-center font-black text-2xl border-2 border-white shadow-xl overflow-hidden text-sm">
-                     {user?.photoURL ? <img src={user.photoURL} alt="V" className="w-full h-full object-cover" /> : userName[0]}
+               <Link to="/profile" className="flex items-center gap-4 bg-white p-2.5 pr-6 rounded-2xl border-2 border-slate-50 shadow-xl hover:border-teal-500/20 transition-all group max-w-[200px] overflow-hidden">
+                  <div className="w-12 h-12 rounded-xl bg-teal-gradient text-white flex items-center justify-center font-black text-xl border-2 border-white shadow-lg overflow-hidden flex-shrink-0">
+                     {user?.photoURL ? <img src={user.photoURL} alt="I" className="w-full h-full object-cover" /> : (profile?.fullName || 'U')[0]}
                   </div>
-                  <div className="flex flex-col">
-                     <span className="text-slate-900 font-black text-sm tracking-tight leading-none group-hover:text-teal-600 transition-colors uppercase">{userName}</span>
-                     <div className="flex items-center gap-1.5 mt-1">
-                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Identidad Verificada</span>
+                  <div className="flex flex-col min-w-0">
+                     <span className="text-slate-900 font-black text-[11px] tracking-tight leading-none group-hover:text-teal-600 transition-colors uppercase truncate">{profile?.fullName || 'Perfil VIP'}</span>
+                     <div className="flex items-center gap-1 mt-1">
+                        <ShieldCheck className="w-3 h-3 text-emerald-500" />
+                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Sincronizado</span>
                      </div>
                   </div>
                </Link>

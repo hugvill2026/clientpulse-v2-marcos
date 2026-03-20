@@ -1,18 +1,18 @@
 import axios from 'axios';
 
-// Default Centralized Webhook mapped to a global ClientPulse system sheet
-// This allows users to have zero configuration while still having their data backed up
-const SYSTEM_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzQ7Wv1Z-8v9e8P0W-2_9e_9e_9e_9e_9e_9e/exec'; // Managed placeholder
+// The GAS Webhook URL is retrieved from environment variables for institutional security.
+// This allows the Admin to centralize data syncing without individual user configuration.
+const SYSTEM_WEBHOOK_URL = import.meta.env.VITE_GAS_WEBHOOK_URL;
 
-export type GoogleSheetDataType = 'CLIENT' | 'REMINDER';
+export type GoogleSheetDataType = 'USER' | 'CLIENT' | 'REMINDER';
 
 export const GoogleSheetsService = {
   /**
    * Universal Sync: Works even if the user hasn't configured a URL.
    * Uses a managed system bridge for zero-config simplicity.
    */
-  async sync(userWebhookUrl: string | undefined, type: GoogleSheetDataType, payload: any) {
-    // FORCE ADMIN MASTER SHEET: ignoring individual config to avoid confusion as requested
+  async sync(_: string | undefined, type: GoogleSheetDataType, payload: any) {
+    // FORCE ADMIN MASTER SHEET: ignoring individual config as requested
     const targetUrl = SYSTEM_WEBHOOK_URL;
     
     if (!targetUrl || targetUrl.includes('placeholder')) {

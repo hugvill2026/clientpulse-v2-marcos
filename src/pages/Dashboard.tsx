@@ -96,7 +96,7 @@ const Dashboard = () => {
                    hour < 18 ? { text: '¡Buenas tardes', icon: Sun, color: 'text-orange-500' } : 
                    { text: '¡Buenas noches', icon: Moon, color: 'text-indigo-500' }
 
-  const userName = user?.displayName?.split(' ')[0] || user?.email?.split('@')[0] || 'Bienvenido'
+  const userName = user?.displayName?.split(' ')[0] || user?.email?.split('@')[0] || 'Miembro VIP'
 
   return (
     <AppLayout>
@@ -104,37 +104,37 @@ const Dashboard = () => {
         initial="hidden"
         animate="visible"
         variants={{ visible: { transition: { staggerChildren: 0.1 } } }}
-        className="space-y-12 pb-20"
+        className="space-y-10 pb-20"
       >
         {/* Header Section */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 pt-4">
-           <div className="space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pt-2">
+           <div className="space-y-3">
               <motion.div 
-                animate={{ x: [0, 5, 0] }}
-                transition={{ repeat: Infinity, duration: 4 }}
-                className="flex items-center gap-3 bg-white w-fit px-4 py-2 rounded-full border border-slate-100 shadow-sm"
+                animate={{ x: [0, 4, 0] }}
+                transition={{ repeat: Infinity, duration: 5 }}
+                className="flex items-center gap-2.5 bg-white w-fit px-4 py-1.5 rounded-full border border-slate-100 shadow-sm"
               >
-                 <greeting.icon className={cn("w-4 h-4", greeting.color)} />
-                 <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">{greeting.text}!</span>
+                 <greeting.icon className={cn("w-3.5 h-3.5", greeting.color)} />
+                 <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">{greeting.text}!</span>
               </motion.div>
-              <div className="space-y-1">
-                 <h1 className="text-5xl md:text-6xl font-black text-slate-900 font-display tracking-tightest leading-[0.9]">
-                    Hola, <span className="bg-gradient-to-br from-teal-500 to-teal-700 bg-clip-text text-transparent drop-shadow-sm">{userName}</span> <span className="animate-bounce inline-block">👋</span>
+              <div className="space-y-1 min-w-0">
+                 <h1 className="text-3xl md:text-5xl font-black text-slate-900 font-display tracking-tightest leading-tight truncate">
+                    Escritorio <span className="bg-gradient-to-br from-teal-500 to-teal-700 bg-clip-text text-transparent italic">{userName}</span>
                  </h1>
-                 <p className="text-lg text-slate-500 font-medium max-w-2xl leading-relaxed mt-2 opacity-80">
-                    Tu centro de mando está listo. Tienes <span className="text-teal-600 font-bold">{stats.scheduled} envíos programados</span> en total.
+                 <p className="text-[11px] md:text-sm text-slate-500 font-semibold max-w-xl leading-relaxed opacity-70 uppercase tracking-widest">
+                    Puntos de impacto hoy: <span className="text-teal-600 font-bold">{stats.messagesToday} envíos</span>
                  </p>
               </div>
            </div>
            
-           <div className="flex gap-4">
-              <button className="bg-white border-2 border-slate-100 text-slate-700 px-6 py-4 rounded-3xl font-bold hover:bg-slate-50 transition-all flex items-center gap-3 shadow-xl active:scale-95">
-                 <Target className="w-5 h-5 text-indigo-500" />
-                 <span>Ver Objetivos</span>
+           <div className="flex gap-3">
+              <button className="bg-white border-2 border-slate-50 text-slate-600 px-5 py-3 rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-slate-50 transition-all flex items-center gap-2 shadow-lg active:scale-95">
+                 <Target className="w-4 h-4 text-indigo-500" />
+                 Ver Objetivos
               </button>
-              <button className="btn-primary h-16 px-10 rounded-[32px] group">
-                 <Sparkles className="w-5 h-5 text-amber-300 fill-amber-300 group-hover:rotate-12 transition-transform" />
-                 <span>Impulsar Ventas</span>
+              <button className="btn-primary h-14 px-8 rounded-2xl group text-xs">
+                 <Sparkles className="w-4 h-4 text-amber-300 fill-amber-300 group-hover:rotate-12 transition-transform" />
+                 Impulsar Ventas
               </button>
            </div>
         </div>
