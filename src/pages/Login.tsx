@@ -35,11 +35,10 @@ const Login = () => {
   })
 
   // Mandatory Session Purge for Data Isolation
+  // Mandatory Session Purge for Data Isolation (Soft-purge to avoid loops)
   React.useEffect(() => {
-    const purgeSession = async () => {
-       try { await logout(); } catch (e) { /* ignore */ }
-    }
-    purgeSession();
+    localStorage.clear();
+    sessionStorage.clear();
   }, []);
 
   // Visual Greeting Cycle

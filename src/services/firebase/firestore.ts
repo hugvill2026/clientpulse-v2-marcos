@@ -58,6 +58,9 @@ export interface ReminderData {
   clientWhatsapp: string;
   messageText: string;
   messageImage?: string;
+  messageVideo?: string;
+  messagePdf?: string;
+  messageZip?: string;
   scheduledAt: any;
   status: 'pending' | 'sent' | 'failed';
   type: 'once' | 'recurring' | 'manual';
@@ -81,6 +84,17 @@ export const UserService = {
   },
 
   async deleteUserAccount(userId: string) {
+    // 1. Delete all Reminders
+    const remindersQuery = query(collection(db, REMINDERS_COLLECTION), where('userId', '==', userId));
+    const remindersSnap = await getDocs(remindersQuery);
+    await Promise.all(remindersSnap.docs.map(d => deleteDoc(d.ref)));
+
+    // 2. Delete all Clients
+    const clientsQuery = query(collection(db, CLIENTS_COLLECTION), where('userId', '==', userId));
+    const clientsSnap = await getDocs(clientsQuery);
+    await Promise.all(clientsSnap.docs.map(d => deleteDoc(d.ref)));
+
+    // 3. Delete Profile
     const docRef = doc(db, USERS_COLLECTION, userId);
     await deleteDoc(docRef);
   }

@@ -59,9 +59,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       await signOut(auth);
       clearStore();
-      localStorage.clear(); // Total Wipe
+      localStorage.clear();
       sessionStorage.clear();
-      window.location.href = '/login'; // Force clean reload
+      // Only reload if we are not already at login to prevent loops
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
     } catch (e) {
       console.error(e);
     }

@@ -23,6 +23,9 @@ const messageSchema = z.object({
   name: z.string().min(3, 'Asunto institucional requerido'),
   text: z.string().min(5, 'El cuerpo del mensaje es muy corto'),
   imageUrl: z.string().url('URL de imagen inválida').optional().or(z.literal('')),
+  videoUrl: z.string().url('URL de video inválida').optional().or(z.literal('')),
+  pdfUrl: z.string().url('URL de PDF inválida').optional().or(z.literal('')),
+  zipUrl: z.string().url('URL de archivo comprimido inválida').optional().or(z.literal('')),
   type: z.enum(['once', 'recurring', 'manual']),
   clientId: z.string().min(1, 'Selecciona un destinatario'),
   scheduledAt: z.string().min(1, 'Define fecha y hora de lanzamiento'),
@@ -54,6 +57,9 @@ const MessageModal = ({ isOpen, onClose, onSubmit, clients, initialData, loading
         name: initialData.name || '',
         text: initialData.messageText || '',
         imageUrl: initialData.messageImage || '',
+        videoUrl: initialData.messageVideo || '',
+        pdfUrl: initialData.messagePdf || '',
+        zipUrl: initialData.messageZip || '',
         type: initialData.type || 'once',
         clientId: initialData.clientId || '',
         scheduledAt: initialData.scheduledAt instanceof Date 
@@ -125,7 +131,19 @@ const MessageModal = ({ isOpen, onClose, onSubmit, clients, initialData, loading
                         </div>
                         <div className="space-y-3">
                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.25em] ml-2">URL de Imagen (Opcional)</label>
-                           <div className="relative group/input"><ImageIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-300 group-focus-within/input:text-rose-500 transition-colors" /><input {...register('imageUrl')} placeholder="https://ejemplo.com/foto.jpg" className="input-premium h-20 pl-16 text-lg" /></div>
+                           <div className="relative group/input"><ImageIcon className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-300 group-focus-within/input:text-rose-500 transition-colors" /><input {...register('imageUrl')} placeholder="https://..." className="input-premium h-20 pl-16 text-lg" /></div>
+                        </div>
+                        <div className="space-y-3">
+                           <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.25em] ml-2">URL de Video (MP4/Link)</label>
+                           <div className="relative group/input"><Zap className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-300 group-focus-within/input:text-sky-500 transition-colors" /><input {...register('videoUrl')} placeholder="https://..." className="input-premium h-20 pl-16 text-lg" /></div>
+                        </div>
+                        <div className="space-y-3">
+                           <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.25em] ml-2">URL de PDF / Documento</label>
+                           <div className="relative group/input"><Target className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-300 group-focus-within/input:text-indigo-600 transition-colors" /><input {...register('pdfUrl')} placeholder="https://..." className="input-premium h-20 pl-16 text-lg" /></div>
+                        </div>
+                        <div className="space-y-3">
+                           <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.25em] ml-2">URL de Archivo ZIP/RAR</label>
+                           <div className="relative group/input"><X className="absolute left-6 top-1/2 -translate-y-1/2 w-6 h-6 text-slate-300 group-focus-within/input:text-slate-900 transition-colors" /><input {...register('zipUrl')} placeholder="https://..." className="input-premium h-20 pl-16 text-lg" /></div>
                         </div>
                         <div className="space-y-3">
                            <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.25em] ml-2">Programación</label>

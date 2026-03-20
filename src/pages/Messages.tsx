@@ -7,7 +7,8 @@ import MessageModal from '../components/messages/MessageModal'
 import { useState, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { 
-  MessageSquare, 
+  Target,
+  X,
   Clock, 
   Plus, 
   Trash, 
@@ -16,7 +17,6 @@ import {
   Mail,
   Send as Telegram,
   TrendingUp,
-  Sparkles,
   Edit2,
   Image as ImageIcon
 } from 'lucide-react'
@@ -29,9 +29,11 @@ const MessageCard = ({ msg, onDelete, onEdit }: { msg: ReminderData, onDelete: (
 
   const handleLaunchChannel = (channel: 'whatsapp' | 'telegram' | 'email') => {
     let finalMessage = msg.messageText.replace(/{{nombre}}/gi, msg.clientName)
-    if (msg.messageImage) {
-       finalMessage += `\n\n🖼️ Imagen de Campaña: ${msg.messageImage}`
-    }
+    if (msg.messageImage) finalMessage += `\n\n🖼️ Imagen: ${msg.messageImage}`
+    if (msg.messageVideo) finalMessage += `\n\n🎥 Video: ${msg.messageVideo}`
+    if (msg.messagePdf) finalMessage += `\n\n📄 PDF: ${msg.messagePdf}`
+    if (msg.messageZip) finalMessage += `\n\n📦 Archivo: ${msg.messageZip}`
+    
     const cleanPhone = msg.clientWhatsapp.replace(/\D/g, '')
 
     if (channel === 'whatsapp') {
@@ -39,7 +41,7 @@ const MessageCard = ({ msg, onDelete, onEdit }: { msg: ReminderData, onDelete: (
        window.open(url, '_blank')
        toast.success('Lanzando WhatsApp...', { icon: '🚀' })
     } else if (channel === 'telegram') {
-       const url = `https://t.me/share/url?url=${encodeURIComponent(msg.messageImage || '')}&text=${encodeURIComponent(finalMessage)}`
+       const url = `https://t.me/share/url?url=${encodeURIComponent(msg.messageImage || msg.messageVideo || '')}&text=${encodeURIComponent(finalMessage)}`
        window.open(url, '_blank')
        toast.success('Lanzando Telegram...', { icon: '✈️' })
     } else if (channel === 'email') {
@@ -90,6 +92,11 @@ const MessageCard = ({ msg, onDelete, onEdit }: { msg: ReminderData, onDelete: (
               <img src={msg.messageImage} alt="M" className="w-full h-full object-cover" />
            </div>
          )}
+         <div className="flex gap-2 mb-2">
+            {msg.messageVideo && <div className="w-8 h-8 bg-sky-100 text-sky-600 rounded-lg flex items-center justify-center" title="Video Incuído"><Zap className="w-4 h-4" /></div>}
+            {msg.messagePdf && <div className="w-8 h-8 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center" title="PDF Incluído"><Target className="w-4 h-4" /></div>}
+            {msg.messageZip && <div className="w-8 h-8 bg-slate-200 text-slate-700 rounded-lg flex items-center justify-center" title="Archivo Incluído"><X className="w-4 h-4" /></div>}
+         </div>
          <p className="text-sm text-slate-600 font-interface leading-relaxed italic w-full font-medium">
             "{msg.messageText.replace('{{nombre}}', msg.clientName)}"
           </p>
@@ -180,6 +187,9 @@ const Messages = () => {
         clientWhatsapp: client.whatsapp,
         messageText: formData.text,
         messageImage: formData.imageUrl || '',
+        messageVideo: formData.videoUrl || '',
+        messagePdf: formData.pdfUrl || '',
+        messageZip: formData.zipUrl || '',
         scheduledAt: new Date(formData.scheduledAt)
       }
 
@@ -194,6 +204,9 @@ const Messages = () => {
            clientName: client.name,
            text: formData.text,
            imageUrl: formData.imageUrl,
+           videoUrl: formData.videoUrl,
+           pdfUrl: formData.pdfUrl,
+           zipUrl: formData.zipUrl,
            scheduledAt: formData.scheduledAt
         })
         toast.success('Programación en la nube activa ☁️', { id: toastId })
