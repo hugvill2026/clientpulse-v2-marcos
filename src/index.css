@@ -11,7 +11,6 @@
     --brand-accent: #F43F5E; /* Rose */
     --surface-glass: rgba(255, 255, 255, 0.85);
     --border-glass: rgba(255, 255, 255, 0.5);
-    --shadow-premium: 0 20px 50px -12px rgba(0, 0, 0, 0.08);
   }
 
   html {
@@ -33,7 +32,7 @@
 @layer components {
   /* Ultra-Premium Glassmorphism */
   .glass {
-    @apply bg-white/80 backdrop-blur-2xl border border-white/60 shadow-premium;
+    @apply bg-white/80 backdrop-blur-2xl border border-white/60 shadow-xl;
   }
   
   .glass-dark {
@@ -42,7 +41,7 @@
 
   /* Institutional Components */
   .card-premium {
-    @apply glass rounded-[40px] p-10 transition-all duration-700 hover:scale-[1.01] hover:border-emerald-500/30 hover:shadow-2xl hover:shadow-emerald-500/5;
+    @apply glass rounded-[40px] p-8 transition-all duration-500 hover:scale-[1.01] hover:border-emerald-500/20 hover:shadow-2xl hover:shadow-emerald-500/5;
   }
 
   .card-gradient {

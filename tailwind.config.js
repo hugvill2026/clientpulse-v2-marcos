@@ -20,6 +20,13 @@ export default {
         interface: ['"Inter"', 'sans-serif'],
         display: ['"Outfit"', 'sans-serif'],
       },
+      boxShadow: {
+        'premium': '0 25px 50px -12px rgba(0, 0, 0, 0.08)',
+        '3xl': '0 35px 60px -15px rgba(0, 0, 0, 0.1)',
+      },
+      letterSpacing: {
+        'tightest': '-0.05em',
+      },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-out forwards',
         'slide-up': 'slideUp 0.5s ease-out forwards',
