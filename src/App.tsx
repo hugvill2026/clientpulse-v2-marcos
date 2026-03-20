@@ -36,10 +36,13 @@ function App() {
     <Suspense fallback={<PageLoader />}>
       <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        
+        {/* Simplified public entry points */}
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        
-        <Route path="/dashboard" element={<Dashboard />} />
+
+        {/* Tactical paths */}
         <Route path="/clients" element={<Clients />} />
         <Route path="/clients/:id" element={<ClientDetail />} />
         <Route path="/categories" element={<Categories />} />
@@ -51,9 +54,8 @@ function App() {
         <Route path="/help" element={<Help />} />
         <Route path="/onboarding" element={<Onboarding />} />
 
-        {/* Root Redirect based on landing path */}
-        <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
+        {/* Atomic root resolution */}
+        <Route path="/" element={isAuthenticated ? <Navigate to="/dashboard" /> : <Navigate to="/login" />} />
       </Routes>
     </Suspense>
   )
